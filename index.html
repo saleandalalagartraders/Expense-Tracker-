@@ -248,7 +248,6 @@
     .dot { width: 6px; height: 6px; border-radius: 50%; }
     .dot-inc { background: var(--success); }
     .dot-exp { background: var(--danger); }
-    .calendar-cell-amount { font-size: 0.7rem; font-weight: 700; }
 
     /* SUMMARY MONTHLY RING LIST STYLES */
     .summary-list { display: flex; flex-direction: column; gap: 16px; }
@@ -257,7 +256,6 @@
       padding: 16px 24px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border);
       border-radius: 16px; flex-wrap: wrap; gap: 16px;
     }
-    .summary-ring { width: 60px; height: 60px; position: relative; }
 
     /* SMART WIDGETS STYLES */
     .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
@@ -319,6 +317,18 @@
     .essential-icon.warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
     .essential-info-title { font-weight: 700; font-size: 0.9rem; }
     .essential-info-sub { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* HOW TO USE PAGE STYLES */
+    .guide-card { margin-bottom: 24px; }
+    .guide-step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+    .guide-num {
+      background: var(--primary); color: #fff; width: 32px; height: 32px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .guide-body { flex: 1; }
+    .guide-body h4 { font-size: 1rem; margin-bottom: 4px; font-weight: 700; color: #fff; }
+    .guide-body p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
 
     .mobile-nav-toggle {
       display: none; background: var(--input-bg); border: 1px solid var(--card-border);
@@ -422,6 +432,7 @@
       <li class="nav-item" onclick="switchTab('summary')"><i class="fa-solid fa-receipt"></i> Monthly Summaries</li>
       <li class="nav-item" onclick="switchTab('investments')"><i class="fa-solid fa-coins"></i> Investment</li>
       <li class="nav-item" onclick="switchTab('emi')"><i class="fa-solid fa-calculator"></i> Active EMIs</li>
+      <li class="nav-item" onclick="switchTab('howtouse')"><i class="fa-solid fa-circle-question"></i> How to Use</li>
       <li class="nav-item admin-only" id="admin-nav-item" style="display:none;" onclick="switchTab('admin')">
         <i class="fa-solid fa-user-shield"></i> User & Category Control
       </li>
@@ -947,6 +958,162 @@
       <div class="card_3d" id="emi-display-container"></div>
     </div>
 
+    <!-- HOW TO USE PAGE -->
+    <div id="page-howtouse" class="view-page">
+      <div class="card_3d guide-card">
+        <h3 style="margin-bottom: 20px; font-size: 1.25rem;"><i class="fa-solid fa-book-open" style="color: var(--primary);"></i> User Guide & Application Documentation</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem;">
+          Welcome to <strong>Sri Renga Vilas Finance Engine</strong>! This application provides full-fledged wealth tracking, budgeting, and analytics. Below is a complete detailed breakdown of how to use each section of the application.
+        </p>
+
+        <!-- 1. Expense Tracker / Dashboard -->
+        <div class="guide-step">
+          <div class="guide-num">1</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-chart-pie" style="color:var(--primary);"></i> Expense Tracker (Dashboard)</h4>
+            <p>
+              <strong>Purpose:</strong> Serves as your central financial dashboard.<br>
+              <strong>How to Use:</strong>
+              <br>• <strong>Live Activity Bar:</strong> View income, expenses, and net balance logged specifically for today.
+              <br>• <strong>Analytics Filters:</strong> Use the filter panel at the top to filter data by timeframe (This Week, Month, Year, Custom Range) or Category/Subcategory.
+              <br>• <strong>Key Metric Cards:</strong> Instantly check Net Balance, Total Income, Total Expenses, Investments, and EMI obligations.
+              <br>• <strong>Charts:</strong> View visual comparisons of Income vs. Expense and category-wise donut distribution.
+            </p>
+          </div>
+        </div>
+
+        <!-- 2. Goals & Essentials -->
+        <div class="guide-step">
+          <div class="guide-num">2</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-bullseye" style="color:var(--success);"></i> Goals & Essentials</h4>
+            <p>
+              <strong>Purpose:</strong> Track long-term financial targets (e.g., Retirement, Education) and essential protections (e.g., Insurance policies).<br>
+              <strong>How to Use:</strong>
+              <br>• Fill in the <strong>Add / Edit Financial Goal</strong> form with Goal Name, Saved Value, and Target Value.
+              <br>• Fill in the <strong>Essential Covers</strong> form to track protection items with statuses: "Fully Covered" or "Attention Needed".
+              <br>• Real-time progress bars dynamically calculate completion percentages on the main dashboard.
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. Daily Entries -->
+        <div class="guide-step">
+          <div class="guide-num">3</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-list-check" style="color:var(--warning);"></i> Daily Entries (Transactions)</h4>
+            <p>
+              <strong>Purpose:</strong> Log income, expenses, bank transfers, savings, and investments.<br>
+              <strong>How to Use:</strong>
+              <br>• Select transaction <strong>Type</strong> (Income, Expense, Transfer, Savings, Investment).
+              <br>• Select Categories and dynamically populated Subcategories.
+              <br>• If selecting <em>Transfer</em>, specify both <strong>Source Account</strong> and <strong>Destination Account</strong>.
+              <br>• Switch between <strong>Table View</strong> and <strong>Grid View</strong>.
+              <br>• Export all data anytime using the <strong>Export CSV</strong> or <strong>Export Excel</strong> buttons.
+            </p>
+          </div>
+        </div>
+
+        <!-- 4. Spending Manager (Calendar View) -->
+        <div class="guide-step">
+          <div class="guide-num">4</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-calendar-days" style="color:#38bdf8;"></i> Spending Manager (Calendar)</h4>
+            <p>
+              <strong>Purpose:</strong> View daily transaction activity visually on a monthly calendar grid.<br>
+              <strong>How to Use:</strong>
+              <br>• Days with financial activity show visual dots (Green for Income, Red for Expense).
+              <br>• Click any calendar day cell to instantly view all itemized line transactions recorded on that date.
+            </p>
+          </div>
+        </div>
+
+        <!-- 5. Budget & Insights -->
+        <div class="guide-step">
+          <div class="guide-num">5</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-chart-line" style="color:#a855f7;"></i> Budget & Insights</h4>
+            <p>
+              <strong>Purpose:</strong> Advanced analytics for financial trajectory and expense breakdown trends.<br>
+              <strong>How to Use:</strong>
+              <br>• Analyze <strong>Balance & Spending Trend Velocity</strong> over time via interactive line charts.
+              <br>• Review monthly expense trends by individual categories.
+            </p>
+          </div>
+        </div>
+
+        <!-- 6. Smart Widgets -->
+        <div class="guide-step">
+          <div class="guide-num">6</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-widgets" style="color:var(--primary);"></i> Smart Widgets</h4>
+            <p>
+              <strong>Purpose:</strong> Quick-launch dashboard for immediate actions and high-level summaries.<br>
+              <strong>How to Use:</strong>
+              <br>• Check instant metrics (Today's spend, Monthly surplus ratio).
+              <br>• Use quick-action launch buttons to log expenses or jump directly to the calendar.
+            </p>
+          </div>
+        </div>
+
+        <!-- 7. Monthly Summaries -->
+        <div class="guide-step">
+          <div class="guide-num">7</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-receipt" style="color:var(--success);"></i> Monthly Summaries</h4>
+            <p>
+              <strong>Purpose:</strong> Month-by-month financial statement overview.<br>
+              <strong>How to Use:</strong>
+              <br>• View compiled historical monthly records displaying Total Income, Total Expenses, and Net Savings Margin per month.
+            </p>
+          </div>
+        </div>
+
+        <!-- 8. Investments Portfolio -->
+        <div class="guide-step">
+          <div class="guide-num">8</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-coins" style="color:var(--warning);"></i> Investment Portfolio</h4>
+            <p>
+              <strong>Purpose:</strong> Record and monitor investments across various asset classes.<br>
+              <strong>How to Use:</strong>
+              <br>• Log investments specifying Asset Class (Gold, Mutual Funds, Real Estate, Business, etc.), Principal Amount, and Expected Return Rate (% p.a).
+            </p>
+          </div>
+        </div>
+
+        <!-- 9. Active EMIs & Loan Engine -->
+        <div class="guide-step">
+          <div class="guide-num">9</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-calculator" style="color:#ef4444;"></i> Active EMIs & Loan Engine</h4>
+            <p>
+              <strong>Purpose:</strong> Automatic EMI calculation and debt management.<br>
+              <strong>How to Use:</strong>
+              <br>• Input Principal, Annual Interest Rate, Tenure (Months), and Start Date.
+              <br>• The system automatically calculates monthly EMI payments using standard financial amortization formulas.
+            </p>
+          </div>
+        </div>
+
+        <!-- 10. Admin Control Panel -->
+        <div class="guide-step">
+          <div class="guide-num">10</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-user-shield" style="color:var(--primary);"></i> User & Category Control (Admin Only)</h4>
+            <p>
+              <strong>Purpose:</strong> System administration, account customization, and category management.<br>
+              <strong>How to Use:</strong>
+              <br>• View all registered users and their transaction summary counts.
+              <br>• Add/remove accounts and banks (e.g., SBI, HDFC, Cash, Wallet).
+              <br>• Create custom Categories and Subcategories for all transaction types.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ADMIN PANEL -->
     <div id="page-admin" class="view-page">
       <div class="card_3d" style="margin-bottom: 24px;">
@@ -1441,6 +1608,7 @@
         summary: 'Monthly Financial Summaries',
         investments: 'Multiple Portfolio Investment',
         emi: 'Active EMIs & Loan Engine',
+        howtouse: 'How to Use Sri Renga Vilas Finance',
         admin: 'Admin User & Category Control Panel'
       };
       document.getElementById('page-title').textContent = titles[tabId];
@@ -1490,6 +1658,116 @@
         case 'Investment': return 'badge-investment';
         default: return 'badge-income';
       }
+    }
+
+    function handleTypeChange() {
+      const type = document.getElementById('txType').value;
+      const catSelect = document.getElementById('txCategory');
+      const groupToAccount = document.getElementById('groupToAccount');
+      const lblTxAccount = document.getElementById('lblTxAccount');
+
+      if (type === 'Transfer') {
+        groupToAccount.style.display = 'flex';
+        lblTxAccount.textContent = 'From Account (Source)';
+      } else {
+        groupToAccount.style.display = 'none';
+        lblTxAccount.textContent = 'Account (Source)';
+      }
+
+      catSelect.innerHTML = '';
+      const categories = getMasterCategories()[type] || {};
+
+      Object.keys(categories).forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        catSelect.appendChild(opt);
+      });
+
+      populateSubcategories();
+    }
+
+    function populateSubcategories() {
+      const type = document.getElementById('txType').value;
+      const cat = document.getElementById('txCategory').value;
+      const subSelect = document.getElementById('txSubcategory');
+
+      subSelect.innerHTML = '';
+      const categories = getMasterCategories()[type] || {};
+      const subcats = categories[cat] || [];
+
+      subcats.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        subSelect.appendChild(opt);
+      });
+    }
+
+    function saveTransaction(e) {
+      e.preventDefault();
+      const editId = document.getElementById('tx-edit-id').value;
+      let txs = getUserData('transactions');
+
+      const txData = {
+        id: editId ? parseInt(editId) : Date.now(),
+        type: document.getElementById('txType').value,
+        date: document.getElementById('txDate').value,
+        amount: parseFloat(document.getElementById('txAmount').value),
+        category: document.getElementById('txCategory').value,
+        subcategory: document.getElementById('txSubcategory').value,
+        account: document.getElementById('txAccount').value,
+        toAccount: document.getElementById('txType').value === 'Transfer' ? document.getElementById('txToAccount').value : ''
+      };
+
+      if (editId) {
+        const idx = txs.findIndex(t => t.id === parseInt(editId));
+        if (idx !== -1) txs[idx] = txData;
+      } else {
+        txs.push(txData);
+      }
+
+      setUserData('transactions', txs);
+      resetTxForm();
+      renderAll();
+    }
+
+    function editTransaction(id) {
+      const txs = getUserData('transactions');
+      const t = txs.find(item => item.id === id);
+      if (!t) return;
+
+      document.getElementById('tx-edit-id').value = t.id;
+      document.getElementById('txType').value = t.type;
+      handleTypeChange();
+      document.getElementById('txDate').value = t.date;
+      document.getElementById('txAmount').value = t.amount;
+      document.getElementById('txCategory').value = t.category;
+      populateSubcategories();
+      document.getElementById('txSubcategory').value = t.subcategory;
+      document.getElementById('txAccount').value = t.account;
+      if (t.type === 'Transfer') {
+        document.getElementById('txToAccount').value = t.toAccount;
+      }
+
+      document.getElementById('tx-form-title').textContent = 'Edit Transaction Entry';
+      document.getElementById('tx-cancel-btn').style.display = 'inline-flex';
+    }
+
+    function resetTxForm() {
+      document.getElementById('txForm').reset();
+      document.getElementById('tx-edit-id').value = '';
+      document.getElementById('tx-form-title').textContent = 'Add New Daily Transaction';
+      document.getElementById('tx-cancel-btn').style.display = 'none';
+      document.getElementById('txDate').valueAsDate = new Date();
+      handleTypeChange();
+    }
+
+    function deleteTransaction(id) {
+      let txs = getUserData('transactions');
+      txs = txs.filter(t => t.id !== id);
+      setUserData('transactions', txs);
+      renderAll();
     }
 
     /* TRANSACTIONS RENDER */
@@ -2348,27 +2626,31 @@
 
     function renderCharts() {
       const txs = getFilteredTransactions();
-      let inc = 0, exp = 0;
-      const catMap = {};
+      let totalInc = 0, totalExp = 0;
+      const categoryMap = {};
 
       txs.forEach(t => {
         if (t.type.includes('Income')) {
-          inc += t.amount;
+          totalInc += t.amount;
         } else if (t.type !== 'Transfer') {
-          exp += t.amount;
-          catMap[t.category] = (catMap[t.category] || 0) + t.amount;
+          totalExp += t.amount;
+          categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
         }
       });
 
-      const ctxBar = document.getElementById('barChart').getContext('2d');
+      // Render Bar Chart
+      const barCtx = document.getElementById('barChart').getContext('2d');
       if (barChartInstance) barChartInstance.destroy();
-      barChartInstance = new Chart(ctxBar, {
+
+      barChartInstance = new Chart(barCtx, {
         type: 'bar',
         data: {
-          labels: ['Income', 'Expense'],
+          labels: ['Total Income', 'Total Expenses'],
           datasets: [{
-            data: [inc, exp],
-            backgroundColor: ['#10b981', '#ef4444'],
+            data: [totalInc, totalExp],
+            backgroundColor: ['rgba(16, 185, 129, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+            borderColor: ['#10b981', '#ef4444'],
+            borderWidth: 1,
             borderRadius: 8
           }]
         },
@@ -2382,20 +2664,21 @@
         }
       });
 
-      const ctxPie = document.getElementById('pieChart').getContext('2d');
+      // Render Pie Chart
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
       if (pieChartInstance) pieChartInstance.destroy();
 
-      const pieLabels = Object.keys(catMap);
-      const pieData = Object.values(catMap);
-      const pieColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#8b5cf6'];
+      const catLabels = Object.keys(categoryMap);
+      const catData = Object.values(categoryMap);
+      const pieColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
 
-      pieChartInstance = new Chart(ctxPie, {
+      pieChartInstance = new Chart(pieCtx, {
         type: 'doughnut',
         data: {
-          labels: pieLabels.length ? pieLabels : ['No Data'],
+          labels: catLabels.length ? catLabels : ['No Expenses'],
           datasets: [{
-            data: pieData.length ? pieData : [1],
-            backgroundColor: pieLabels.length ? pieColors.slice(0, pieLabels.length) : ['rgba(255,255,255,0.1)']
+            data: catData.length ? catData : [1],
+            backgroundColor: catData.length ? pieColors.slice(0, catLabels.length) : ['rgba(255,255,255,0.1)']
           }]
         },
         options: {
@@ -2405,143 +2688,21 @@
       });
 
       const legendList = document.getElementById('category-legend-list');
-      if (!pieLabels.length) {
-        legendList.innerHTML = '<p style="color:var(--text-muted);">No expenses recorded for period.</p>';
+      if (catLabels.length === 0) {
+        legendList.innerHTML = '<span style="color:var(--text-muted);">No expense categories found for current filter.</span>';
       } else {
-        legendList.innerHTML = pieLabels.map((cat, i) => `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="width:10px; height:10px; border-radius:50%; background:${pieColors[i % pieColors.length]}; display:inline-block;"></span>
-              <span>${sanitize(cat)}</span>
-            </div>
-            <strong>${currentCurrency}${catMap[cat].toFixed(2)}</strong>
+        legendList.innerHTML = catLabels.map((cat, i) => `
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span><i class="fa-solid fa-circle" style="color:${pieColors[i % pieColors.length]}; font-size:0.6rem;"></i> ${sanitize(cat)}</span>
+            <strong>${currentCurrency}${categoryMap[cat].toFixed(2)}</strong>
           </div>
         `).join('');
       }
     }
 
-    function handleTypeChange() {
-      const type = document.getElementById('txType').value;
-      const catSelect = document.getElementById('txCategory');
-      catSelect.innerHTML = '';
-
-      const cats = getMasterCategories()[type] || {};
-      Object.keys(cats).forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        catSelect.appendChild(option);
-      });
-
-      const toAccGroup = document.getElementById('groupToAccount');
-      const lblAccount = document.getElementById('lblTxAccount');
-
-      if (type === 'Transfer') {
-        toAccGroup.style.display = 'flex';
-        lblAccount.textContent = 'From Account (Source)';
-      } else {
-        toAccGroup.style.display = 'none';
-        lblAccount.textContent = 'Account';
-      }
-
-      populateSubcategories();
-    }
-
-    function populateSubcategories() {
-      const type = document.getElementById('txType').value;
-      const cat = document.getElementById('txCategory').value;
-      const subSelect = document.getElementById('txSubcategory');
-      subSelect.innerHTML = '';
-
-      const cats = getMasterCategories()[type] || {};
-      if (cats && cats[cat]) {
-        cats[cat].forEach(sub => {
-          const option = document.createElement('option');
-          option.value = sub;
-          option.textContent = sub;
-          subSelect.appendChild(option);
-        });
-      }
-    }
-
-    function saveTransaction(e) {
-      e.preventDefault();
-      const editId = document.getElementById('tx-edit-id').value;
-      let transactions = getUserData('transactions');
-      const txTypeVal = document.getElementById('txType').value;
-
-      if (txTypeVal === 'Transfer') {
-        const fromAcc = document.getElementById('txAccount').value;
-        const toAcc = document.getElementById('txToAccount').value;
-        if (fromAcc === toAcc) {
-          alert('Source and destination accounts must be different for transfers!');
-          return;
-        }
-      }
-
-      const txData = {
-        id: editId ? parseInt(editId) : Date.now(),
-        type: txTypeVal,
-        date: document.getElementById('txDate').value,
-        amount: parseFloat(document.getElementById('txAmount').value),
-        category: document.getElementById('txCategory').value,
-        subcategory: document.getElementById('txSubcategory').value,
-        account: document.getElementById('txAccount').value,
-        toAccount: txTypeVal === 'Transfer' ? document.getElementById('txToAccount').value : ''
-      };
-
-      if (editId) {
-        const idx = transactions.findIndex(t => t.id === parseInt(editId));
-        if (idx !== -1) transactions[idx] = txData;
-      } else {
-        transactions.unshift(txData);
-      }
-
-      setUserData('transactions', transactions);
-      resetTxForm();
-      renderAll();
-    }
-
-    function editTransaction(id) {
-      const transactions = getUserData('transactions');
-      const tx = transactions.find(t => t.id === id);
-      if (!tx) return;
-
-      document.getElementById('tx-edit-id').value = tx.id;
-      document.getElementById('txType').value = tx.type;
-      handleTypeChange();
-      document.getElementById('txDate').value = tx.date;
-      document.getElementById('txAmount').value = tx.amount;
-      document.getElementById('txCategory').value = tx.category;
-      populateSubcategories();
-      document.getElementById('txSubcategory').value = tx.subcategory;
-      document.getElementById('txAccount').value = tx.account;
-      if (tx.type === 'Transfer' && tx.toAccount) {
-        document.getElementById('txToAccount').value = tx.toAccount;
-      }
-
-      document.getElementById('tx-form-title').textContent = 'Edit Transaction Entry';
-      document.getElementById('tx-cancel-btn').style.display = 'inline-flex';
-    }
-
-    function resetTxForm() {
-      document.getElementById('txForm').reset();
-      document.getElementById('tx-edit-id').value = '';
-      document.getElementById('tx-form-title').textContent = 'Add New Daily Transaction';
-      document.getElementById('tx-cancel-btn').style.display = 'none';
-      document.getElementById('txDate').valueAsDate = new Date();
-      handleTypeChange();
-    }
-
-    function deleteTransaction(id) {
-      let transactions = getUserData('transactions');
-      transactions = transactions.filter(t => t.id !== id);
-      setUserData('transactions', transactions);
-      renderAll();
-    }
-
-    function changeCalendarMonth(offset) {
-      calendarDate.setMonth(calendarDate.getMonth() + offset);
+    /* SPENDING MANAGER (CALENDAR VIEW) */
+    function changeCalendarMonth(delta) {
+      calendarDate.setMonth(calendarDate.getMonth() + delta);
       renderCalendar();
     }
 
@@ -2549,7 +2710,7 @@
       const year = calendarDate.getFullYear();
       const month = calendarDate.getMonth();
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      
+
       document.getElementById('calendar-month-year-title').textContent = `${monthNames[month]} ${year}`;
 
       const firstDay = new Date(year, month, 1).getDay();
@@ -2560,40 +2721,35 @@
       const container = document.getElementById('calendar-days-container');
       container.innerHTML = '';
 
+      // Days from previous month
       for (let i = firstDay - 1; i >= 0; i--) {
-        const dayNum = prevMonthDays - i;
         const cell = document.createElement('div');
         cell.className = 'calendar-cell other-month';
-        cell.innerHTML = `<div class="calendar-date-num">${dayNum}</div>`;
+        cell.innerHTML = `<div class="calendar-date-num">${prevMonthDays - i}</div>`;
         container.appendChild(cell);
       }
 
+      // Days of current month
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const dayTxs = txs.filter(t => t.date === dateStr);
 
-        let incTotal = 0, expTotal = 0;
-        dayTxs.forEach(t => {
-          if (t.type.includes('Income')) incTotal += t.amount;
-          else if (t.type !== 'Transfer') expTotal += t.amount;
-        });
+        let hasInc = dayTxs.some(t => t.type.includes('Income'));
+        let hasExp = dayTxs.some(t => !t.type.includes('Income') && t.type !== 'Transfer');
 
         const cell = document.createElement('div');
         cell.className = 'calendar-cell';
         cell.onclick = () => selectCalendarDate(dateStr, dayTxs);
 
-        let dotsHtml = '';
-        if (incTotal > 0) dotsHtml += `<div class="dot dot-inc" title="Income: ${currentCurrency}${incTotal}"></div>`;
-        if (expTotal > 0) dotsHtml += `<div class="dot dot-exp" title="Expense: ${currentCurrency}${expTotal}"></div>`;
-
-        let amtDisplay = '';
-        if (expTotal > 0) amtDisplay = `<div class="calendar-cell-amount" style="color:var(--danger);">-${currentCurrency}${expTotal.toFixed(0)}</div>`;
-        else if (incTotal > 0) amtDisplay = `<div class="calendar-cell-amount" style="color:var(--success);">+${currentCurrency}${incTotal.toFixed(0)}</div>`;
-
         cell.innerHTML = `
           <div class="calendar-date-num">${day}</div>
-          <div class="calendar-dots">${dotsHtml}</div>
-          ${amtDisplay}
+          <div class="calendar-dots">
+            ${hasInc ? '<div class="dot dot-inc"></div>' : ''}
+            ${hasExp ? '<div class="dot dot-exp"></div>' : ''}
+          </div>
+          <div class="calendar-cell-amount" style="color:var(--text-muted); text-align:right;">
+            ${dayTxs.length > 0 ? `${dayTxs.length} entries` : ''}
+          </div>
         `;
         container.appendChild(cell);
       }
@@ -2602,8 +2758,9 @@
     function selectCalendarDate(dateStr, txs) {
       document.getElementById('selected-date-title').textContent = `Transactions for ${dateStr}`;
       const container = document.getElementById('selected-date-tx-list');
-      if (txs.length === 0) {
-        container.innerHTML = `<p style="color:var(--text-muted);">No records logged for this date.</p>`;
+
+      if (!txs || txs.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">No transaction records for this date.</p>';
         return;
       }
 
@@ -2611,84 +2768,55 @@
         <div class="table-responsive">
           <table>
             <thead>
-              <tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Account / Route</th><th>Amount</th></tr>
+              <tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Account</th><th>Amount</th></tr>
             </thead>
             <tbody>
-              ${txs.map(t => {
-                const accDisplay = t.type === 'Transfer' ? `${sanitize(t.account)} <i class="fa-solid fa-arrow-right" style="font-size:0.75rem;"></i> ${sanitize(t.toAccount)}` : sanitize(t.account);
-                return `
+              ${txs.map(t => `
                 <tr>
-                  <td><span class="badge ${getBadgeClass(t.type)}">${t.type}</span></td>
+                  <td><span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span></td>
                   <td>${sanitize(t.category)}</td>
                   <td>${sanitize(t.subcategory)}</td>
-                  <td>${accDisplay}</td>
-                  <td style="font-weight:700; color:${t.type.includes('Income') ? 'var(--success)' : (t.type === 'Transfer' ? 'var(--primary)' : 'var(--danger)')}">
-                    ${t.type.includes('Income') ? '+' : (t.type === 'Transfer' ? '⇄ ' : '-')}${currentCurrency}${t.amount.toFixed(2)}
+                  <td>${sanitize(t.account)}</td>
+                  <td style="font-weight:700; color:${t.type.includes('Income') ? 'var(--success)' : 'var(--danger)'}">
+                    ${currentCurrency}${t.amount.toFixed(2)}
                   </td>
-                </tr>`;
-              }).join('')}
+                </tr>`).join('')}
             </tbody>
           </table>
-        </div>`;
+        </div>
+      `;
     }
 
+    /* BUDGET & INSIGHTS CHARTS */
     function renderInsightsCharts() {
       const txs = getUserData('transactions');
       
-      const monthMap = {};
+      // Line trend
+      const dateMap = {};
       txs.forEach(t => {
-        const d = new Date(t.date);
-        if (isNaN(d)) return;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        if (!monthMap[key]) monthMap[key] = { inc: 0, exp: 0 };
-        if (t.type.includes('Income')) monthMap[key].inc += t.amount;
-        else if (t.type !== 'Transfer') monthMap[key].exp += t.amount;
+        if (!dateMap[t.date]) dateMap[t.date] = { inc: 0, exp: 0 };
+        if (t.type.includes('Income')) dateMap[t.date].inc += t.amount;
+        else if (t.type !== 'Transfer') dateMap[t.date].exp += t.amount;
       });
 
-      const sortedMonths = Object.keys(monthMap).sort();
-      const incData = sortedMonths.map(m => monthMap[m].inc);
-      const expData = sortedMonths.map(m => monthMap[m].exp);
+      const sortedDates = Object.keys(dateMap).sort();
+      const incTrend = sortedDates.map(d => dateMap[d].inc);
+      const expTrend = sortedDates.map(d => dateMap[d].exp);
 
-      const ctxLine = document.getElementById('lineTrendChart').getContext('2d');
+      const lineCtx = document.getElementById('lineTrendChart').getContext('2d');
       if (lineTrendChartInstance) lineTrendChartInstance.destroy();
-      lineTrendChartInstance = new Chart(ctxLine, {
+
+      lineTrendChartInstance = new Chart(lineCtx, {
         type: 'line',
         data: {
-          labels: sortedMonths.length ? sortedMonths : ['No Data'],
+          labels: sortedDates.length ? sortedDates : ['No Data'],
           datasets: [
-            { label: 'Income', data: incData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 },
-            { label: 'Expense', data: expData, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 }
+            { label: 'Income', data: incTrend, borderColor: '#10b981', tension: 0.3, fill: false },
+            { label: 'Expenses', data: expTrend, borderColor: '#ef4444', tension: 0.3, fill: false }
           ]
         },
         options: {
           responsive: true,
-          plugins: { legend: { labels: { color: '#94a3b8' } } },
-          scales: {
-            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-          }
-        }
-      });
-
-      const expMap = {};
-      txs.filter(t => !t.type.includes('Income') && t.type !== 'Transfer').forEach(t => {
-        expMap[t.category] = (expMap[t.category] || 0) + t.amount;
-      });
-
-      const categories = Object.keys(expMap);
-      const categoryAmounts = Object.values(expMap);
-
-      const ctxCat = document.getElementById('categoryTrendChart').getContext('2d');
-      if (categoryTrendChartInstance) categoryTrendChartInstance.destroy();
-      categoryTrendChartInstance = new Chart(ctxCat, {
-        type: 'bar',
-        data: {
-          labels: categories.length ? categories : ['No Expenses'],
-          datasets: [{ label: 'Spent Amount', data: categoryAmounts, backgroundColor: '#38bdf8', borderRadius: 8 }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
           scales: {
             y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
             x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
@@ -2696,98 +2824,100 @@
         }
       });
 
-      const container = document.getElementById('insights-category-list');
-      const totalSpent = categoryAmounts.reduce((a, b) => a + b, 0);
-      if (categories.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No category data found.</p>';
-      } else {
-        container.innerHTML = categories.map(cat => {
-          const amt = expMap[cat];
-          const pct = totalSpent ? ((amt / totalSpent) * 100).toFixed(1) : 0;
-          return `
-            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
-              <span>${sanitize(cat)}</span>
-              <div>
-                <span style="color:var(--text-muted); margin-right:10px;">${pct}%</span>
-                <strong>${currentCurrency}${amt.toFixed(2)}</strong>
-              </div>
-            </div>`;
-        }).join('');
-      }
+      // Category breakdown list
+      const catMap = {};
+      txs.forEach(t => {
+        if (!t.type.includes('Income') && t.type !== 'Transfer') {
+          catMap[t.category] = (catMap[t.category] || 0) + t.amount;
+        }
+      });
+
+      const listContainer = document.getElementById('insights-category-list');
+      listContainer.innerHTML = Object.keys(catMap).map(c => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--card-border);">
+          <span>${sanitize(c)}</span>
+          <strong style="color:var(--danger);">${currentCurrency}${catMap[c].toFixed(2)}</strong>
+        </div>
+      `).join('') || '<p style="color:var(--text-muted);">No expense data available.</p>';
     }
 
+    /* SMART WIDGETS */
     function renderSmartWidgets() {
       const txs = getUserData('transactions');
       const todayStr = new Date().toISOString().split('T')[0];
-
       const todayTxs = txs.filter(t => t.date === todayStr);
-      const todayExp = todayTxs.filter(t => !t.type.includes('Income') && t.type !== 'Transfer').reduce((a, b) => a + b.amount, 0);
+
+      const todaySpend = todayTxs.filter(t => !t.type.includes('Income') && t.type !== 'Transfer').reduce((a, b) => a + b.amount, 0);
       const todayInc = todayTxs.filter(t => t.type.includes('Income')).reduce((a, b) => a + b.amount, 0);
 
-      document.getElementById('widget-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
+      document.getElementById('widget-today-spend').textContent = `${currentCurrency}${todaySpend.toFixed(2)}`;
       document.getElementById('widget-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
 
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
+      const curMonth = new Date().getMonth();
+      const curYear = new Date().getFullYear();
       const monthTxs = txs.filter(t => {
         const d = new Date(t.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        return d.getMonth() === curMonth && d.getFullYear() === curYear;
       });
 
-      const monthInc = monthTxs.filter(t => t.type.includes('Income')).reduce((a, b) => a + b.amount, 0);
-      const monthExp = monthTxs.filter(t => !t.type.includes('Income') && t.type !== 'Transfer').reduce((a, b) => a + b.amount, 0);
-      const surplus = monthInc - monthExp;
-      const ratio = monthInc ? ((monthExp / monthInc) * 100).toFixed(0) : 0;
+      const mInc = monthTxs.filter(t => t.type.includes('Income')).reduce((a, b) => a + b.amount, 0);
+      const mExp = monthTxs.filter(t => !t.type.includes('Income') && t.type !== 'Transfer').reduce((a, b) => a + b.amount, 0);
+
+      const surplus = mInc - mExp;
+      const ratio = mInc > 0 ? Math.round((mExp / mInc) * 100) : 0;
 
       document.getElementById('widget-month-surplus').textContent = `${currentCurrency}${surplus.toFixed(2)}`;
       document.getElementById('widget-month-ratio').textContent = `${ratio}%`;
     }
 
+    /* MONTHLY SUMMARY BREAKDOWN */
     function renderMonthlySummaries() {
       const txs = getUserData('transactions');
-      const container = document.getElementById('monthly-summary-container');
-      
       const monthMap = {};
-      txs.forEach(t => {
-        const dateObj = new Date(t.date);
-        if (isNaN(dateObj)) return;
-        const key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-        const monthName = dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-        if (!monthMap[key]) {
-          monthMap[key] = { monthName, income: 0, expense: 0 };
-        }
-        if (t.type.includes('Income')) {
-          monthMap[key].income += t.amount;
-        } else if (t.type !== 'Transfer') {
-          monthMap[key].expense += t.amount;
-        }
+      txs.forEach(t => {
+        const monthKey = t.date ? t.date.substring(0, 7) : 'Unknown';
+        if (!monthMap[monthKey]) monthMap[monthKey] = { inc: 0, exp: 0 };
+
+        if (t.type.includes('Income')) monthMap[monthKey].inc += t.amount;
+        else if (t.type !== 'Transfer') monthMap[monthKey].exp += t.amount;
       });
 
-      const keys = Object.keys(monthMap).sort().reverse();
-      if (keys.length === 0) {
-        container.innerHTML = `<p style="color:var(--text-muted);">No recorded transactions found.</p>`;
+      const container = document.getElementById('monthly-summary-container');
+      const sortedMonths = Object.keys(monthMap).sort().reverse();
+
+      if (sortedMonths.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No monthly data available.</p>';
         return;
       }
 
-      container.innerHTML = keys.map(k => {
-        const m = monthMap[k];
-        const total = m.income - m.expense;
+      container.innerHTML = sortedMonths.map(m => {
+        const inc = monthMap[m].inc;
+        const exp = monthMap[m].exp;
+        const net = inc - exp;
+
         return `
           <div class="summary-card">
             <div>
-              <h4 style="font-size: 1.1rem; font-weight:800; margin-bottom:8px;">${m.monthName}</h4>
-              <div style="font-size:0.9rem; margin-bottom:4px;">Income: <span style="color:var(--success); font-weight:700;">${currentCurrency}${m.income.toFixed(2)}</span></div>
-              <div style="font-size:0.9rem; margin-bottom:4px;">Expense: <span style="color:var(--danger); font-weight:700;">-${currentCurrency}${m.expense.toFixed(2)}</span></div>
-              <div style="font-size:0.95rem; font-weight:800;">Net Balance: <span style="color:${total >= 0 ? 'var(--success)' : 'var(--danger)'}">${currentCurrency}${total.toFixed(2)}</span></div>
+              <div style="font-weight:800; font-size:1.1rem; color:#fff;">${m}</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Financial Summary Statement</div>
             </div>
-            <div class="summary-ring">
-              <svg viewBox="0 0 36 36" style="width:100%; height:100%;">
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3" />
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--primary)" stroke-dasharray="${m.income ? Math.min(100, Math.round((m.expense / m.income) * 100)) : 0}, 100" stroke-width="3" />
-              </svg>
+            <div style="display:flex; gap:24px; flex-wrap:wrap;">
+              <div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Income</div>
+                <div style="color:var(--success); font-weight:800;">${currentCurrency}${inc.toFixed(2)}</div>
+              </div>
+              <div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Expense</div>
+                <div style="color:var(--danger); font-weight:800;">${currentCurrency}${exp.toFixed(2)}</div>
+              </div>
+              <div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Net Balance</div>
+                <div style="color:${net >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:800;">${currentCurrency}${net.toFixed(2)}</div>
+              </div>
             </div>
-          </div>`;
+          </div>
+        `;
       }).join('');
     }
   </script>

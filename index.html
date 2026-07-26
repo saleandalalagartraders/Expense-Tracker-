@@ -1193,10 +1193,10 @@
       });
     }
 
-    /* Helper function to strip any type prefixes (e.g., 'Income-', 'Expense-') from subcategory strings */
+    /* Helper function to strip any category prefixes (e.g., 'Income-', 'Expense-', '- ') from subcategory strings */
     function stripCategoryPrefix(str) {
       if (typeof str !== 'string') return str;
-      return str.replace(/^(Income|Expense|Transfer|Savings|Investment)\s*-\s*/i, '');
+      return str.replace(/^(Income|Expense|Transfer|Savings|Investment)\s*[-:]\s*/i, '').replace(/^[-:\s]+/, '').trim();
     }
 
     const defaultAccounts = ["Cash", "SBI", "ICICI", "IOB", "Federal", "Canara", "Post Office", "Others"];
@@ -1947,7 +1947,7 @@
           <div class="table-responsive">
             <table>
               <thead>
-                <tr><th>Date</th><th>Asset Name</th><th>Category</th><th>Principal Amount</th><th>Exp. Return</th><th>Action</th></tr>
+                <tr><th>Date</th><th>Asset Name</th><th>Category</th><th>Principal</th><th>Expected ROI</th><th>Actions</th></tr>
               </thead>
               <tbody>
                 ${investments.map(inv => `
@@ -1955,13 +1955,14 @@
                     <td>${sanitize(inv.date)}</td>
                     <td><strong>${sanitize(inv.name)}</strong></td>
                     <td><span class="badge badge-investment">${sanitize(inv.type)}</span></td>
-                    <td>${currentCurrency}${inv.amount.toFixed(2)}</td>
-                    <td style="color:var(--success); font-weight:700;">${inv.rate}% p.a</td>
+                    <td style="font-weight:700; color:var(--warning);">${currentCurrency}${inv.amount.toFixed(2)}</td>
+                    <td>${inv.rate}% p.a</td>
                     <td>
                       <button onclick="editInvestment(${inv.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
                       <button onclick="deleteInvestment(${inv.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
                     </td>
-                  </tr>`).join('')}
+                  </tr>
+                `).join('')}
               </tbody>
             </table>
           </div>`;
@@ -1974,14 +1975,15 @@
                   <span class="badge badge-investment">${sanitize(inv.type)}</span>
                   <span style="font-size:0.8rem; color:var(--text-muted);">${sanitize(inv.date)}</span>
                 </div>
-                <div style="font-weight:800; font-size:1.1rem; margin-bottom:4px;">${sanitize(inv.name)}</div>
-                <div style="font-size:1.3rem; font-weight:800; color:var(--warning); margin-bottom:6px;">${currentCurrency}${inv.amount.toFixed(2)}</div>
-                <div style="font-size:0.85rem; color:var(--success); font-weight:700;">Rate: ${inv.rate}% p.a</div>
+                <div style="font-size:1.1rem; font-weight:800; margin-bottom:4px;">${sanitize(inv.name)}</div>
+                <div style="font-weight:800; font-size:1.3rem; color:var(--warning); margin-bottom:6px;">${currentCurrency}${inv.amount.toFixed(2)}</div>
+                <div style="font-size:0.85rem; color:var(--text-muted);">Expected Return: ${inv.rate}% p.a</div>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
                   <button onclick="editInvestment(${inv.id})" class="btn" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-pen"></i></button>
                   <button onclick="deleteInvestment(${inv.id})" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-trash"></i></button>
                 </div>
-              </div>`).join('')}
+              </div>
+            `).join('')}
           </div>`;
       }
     }
@@ -1992,26 +1994,13 @@
       const editId = document.getElementById('emi-edit-id').value;
       let emis = getUserData('emis');
 
-      const P = parseFloat(document.getElementById('emiPrincipal').value);
-      const annualRate = parseFloat(document.getElementById('emiRate').value);
-      const N = parseInt(document.getElementById('emiTenure').value);
-
-      const R = (annualRate / 12) / 100;
-      let monthlyEmi = 0;
-      if (R > 0) {
-        monthlyEmi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
-      } else {
-        monthlyEmi = P / N;
-      }
-
       const emiData = {
         id: editId ? parseInt(editId) : Date.now(),
         title: document.getElementById('emiTitle').value,
-        principal: P,
-        rate: annualRate,
-        tenure: N,
-        startDate: document.getElementById('emiStartDate').value,
-        monthlyEmi: monthlyEmi
+        principal: parseFloat(document.getElementById('emiPrincipal').value),
+        rate: parseFloat(document.getElementById('emiRate').value),
+        tenure: parseInt(document.getElementById('emiTenure').value),
+        startDate: document.getElementById('emiStartDate').value
       };
 
       if (editId) {
@@ -2057,12 +2046,19 @@
       renderAll();
     }
 
+    function calculateMonthlyEMI(principal, annualRate, tenureMonths) {
+      if (!principal || !tenureMonths) return 0;
+      const r = (annualRate / 12) / 100;
+      if (r === 0) return principal / tenureMonths;
+      return (principal * r * Math.pow(1 + r, tenureMonths)) / (Math.pow(1 + r, tenureMonths) - 1);
+    }
+
     function renderEMIs() {
       const emis = getUserData('emis');
       const container = document.getElementById('emi-display-container');
 
       if (!emis || emis.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No active EMIs logged yet.</p>';
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No active EMI obligations recorded.</p>';
         return;
       }
 
@@ -2071,280 +2067,50 @@
           <div class="table-responsive">
             <table>
               <thead>
-                <tr><th>Loan Title</th><th>Principal</th><th>Rate</th><th>Tenure</th><th>Start Date</th><th>Monthly EMI</th><th>Action</th></tr>
+                <tr><th>Loan Title</th><th>Principal</th><th>Rate</th><th>Tenure</th><th>Start Date</th><th>Monthly EMI</th><th>Actions</th></tr>
               </thead>
               <tbody>
-                ${emis.map(e => `
+                ${emis.map(e => {
+                  const monthlyEmi = calculateMonthlyEMI(e.principal, e.rate, e.tenure);
+                  return `
                   <tr>
                     <td><strong>${sanitize(e.title)}</strong></td>
                     <td>${currentCurrency}${e.principal.toFixed(2)}</td>
                     <td>${e.rate}%</td>
-                    <td>${e.tenure} Months</td>
+                    <td>${e.tenure} mos</td>
                     <td>${sanitize(e.startDate)}</td>
-                    <td style="color:#a855f7; font-weight:800;">${currentCurrency}${e.monthlyEmi.toFixed(2)}</td>
+                    <td style="font-weight:800; color:#a855f7;">${currentCurrency}${monthlyEmi.toFixed(2)}</td>
                     <td>
                       <button onclick="editEMI(${e.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
                       <button onclick="deleteEMI(${e.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
                     </td>
-                  </tr>`).join('')}
+                  </tr>`;
+                }).join('')}
               </tbody>
             </table>
           </div>`;
       } else {
         container.innerHTML = `
           <div class="records-grid">
-            ${emis.map(e => `
+            ${emis.map(e => {
+              const monthlyEmi = calculateMonthlyEMI(e.principal, e.rate, e.tenure);
+              return `
               <div class="grid-card">
-                <div style="font-weight:800; font-size:1.1rem; margin-bottom:6px;">${sanitize(e.title)}</div>
-                <div style="font-size:0.85rem; color:var(--text-muted);">Principal: ${currentCurrency}${e.principal.toFixed(2)} @ ${e.rate}%</div>
-                <div style="font-size:1.4rem; font-weight:800; color:#a855f7; margin:8px 0;">${currentCurrency}${e.monthlyEmi.toFixed(2)} / mo</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">Tenure: ${e.tenure} months | Starts: ${sanitize(e.startDate)}</div>
+                <div style="font-size:1.1rem; font-weight:800; margin-bottom:4px;">${sanitize(e.title)}</div>
+                <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">Principal: ${currentCurrency}${e.principal.toFixed(2)} @ ${e.rate}%</div>
+                <div style="font-weight:800; font-size:1.3rem; color:#a855f7; margin-bottom:6px;">${currentCurrency}${monthlyEmi.toFixed(2)} / mo</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Tenure: ${e.tenure} Months | Started: ${sanitize(e.startDate)}</div>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
                   <button onclick="editEMI(${e.id})" class="btn" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-pen"></i></button>
                   <button onclick="deleteEMI(${e.id})" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-trash"></i></button>
                 </div>
-              </div>`).join('')}
+              </div>`;
+            }).join('')}
           </div>`;
       }
     }
 
-    /* ADMIN PANEL LOGIC */
-    function renderAdminUsersTable() {
-      const users = JSON.parse(localStorage.getItem('srv_users')) || [];
-      const tbody = document.getElementById('admin-users-table-body');
-      if (!tbody) return;
-
-      tbody.innerHTML = users.map(u => {
-        const userTxs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_transactions`)) || [];
-        const userInvs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_investments`)) || [];
-        const userEmis = JSON.parse(localStorage.getItem(`srv_data_${u.id}_emis`)) || [];
-
-        return `
-        <tr>
-          <td><strong>${sanitize(u.name)}</strong></td>
-          <td>${sanitize(u.username || u.email)}</td>
-          <td>${sanitize(u.phone || 'N/A')}</td>
-          <td><span class="badge ${u.role === 'admin' ? 'badge-expense' : 'badge-income'}">${sanitize(u.role)}</span></td>
-          <td>${userTxs.length} entries</td>
-          <td>${userInvs.length} entries</td>
-          <td>${userEmis.length} entries</td>
-        </tr>`;
-      }).join('');
-    }
-
-    function addAdminCategory(e) {
-      e.preventDefault();
-      const type = document.getElementById('admin-cat-type').value;
-      const catName = document.getElementById('admin-cat-name').value.trim();
-      const subcatsRaw = document.getElementById('admin-subcat-list').value;
-
-      if (!catName || !subcatsRaw) return;
-
-      const subcatList = subcatsRaw.split(',').map(s => stripCategoryPrefix(s.trim())).filter(s => s.length > 0);
-      let categories = getMasterCategories();
-
-      if (!categories[type]) categories[type] = {};
-      categories[type][catName] = subcatList;
-
-      localStorage.setItem('srv_categories', JSON.stringify(categories));
-      
-      document.getElementById('admin-cat-name').value = '';
-      document.getElementById('admin-subcat-list').value = '';
-
-      handleTypeChange();
-      initDashboardFilterDropdowns();
-      renderAdminCategoryTable();
-    }
-
-    function deleteAdminCategory(type, catName) {
-      let categories = getMasterCategories();
-      if (categories[type] && categories[type][catName]) {
-        delete categories[type][catName];
-        localStorage.setItem('srv_categories', JSON.stringify(categories));
-        handleTypeChange();
-        initDashboardFilterDropdowns();
-        renderAdminCategoryTable();
-      }
-    }
-
-    function renderAdminCategoryTable() {
-      const categories = getMasterCategories();
-      const tbody = document.getElementById('admin-cat-table-body');
-      if (!tbody) return;
-
-      let html = '';
-      Object.keys(categories).forEach(type => {
-        Object.keys(categories[type] || {}).forEach(cat => {
-          const subs = categories[type][cat].map(s => stripCategoryPrefix(s)).join(', ');
-          html += `
-            <tr>
-              <td><span class="badge ${getBadgeClass(type)}">${sanitize(type)}</span></td>
-              <td><strong>${sanitize(cat)}</strong></td>
-              <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(subs)}</td>
-              <td>
-                <button onclick="deleteAdminCategory('${type}', '${cat}')" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-              </td>
-            </tr>`;
-        });
-      });
-
-      tbody.innerHTML = html || '<tr><td colspan="4">No custom categories found.</td></tr>';
-    }
-
-    /* EXPORT FUNCTIONALITY FOR TRANSACTIONS */
-    function downloadFile(content, fileName, mimeType) {
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }, 0);
-    }
-
-    function exportTransactionsCSV() {
-      const txs = getUserData('transactions');
-      if (!txs || txs.length === 0) {
-        alert('No transaction records found to export.');
-        return;
-      }
-
-      let csv = 'Date,Type,Main Category,Subcategory,Account / Route,Amount (' + currentCurrency + ')\n';
-      txs.forEach(t => {
-        const amt = t.type.includes('Income') ? t.amount : (t.type === 'Transfer' ? t.amount : -t.amount);
-        const accInfo = t.type === 'Transfer' ? `${t.account} -> ${t.toAccount}` : t.account;
-        const cleanSub = stripCategoryPrefix(t.subcategory || '');
-        const row = [
-          `"${t.date || ''}"`,
-          `"${t.type || ''}"`,
-          `"${(t.category || '').replace(/"/g, '""')}"`,
-          `"${cleanSub.replace(/"/g, '""')}"`,
-          `"${accInfo.replace(/"/g, '""')}"`,
-          amt.toFixed(2)
-        ];
-        csv += row.join(',') + '\n';
-      });
-
-      downloadFile(csv, `Transactions_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
-    }
-
-    function exportTransactionsExcel() {
-      const txs = getUserData('transactions');
-      if (!txs || txs.length === 0) {
-        alert('No transaction records found to export.');
-        return;
-      }
-
-      let tableHtml = `<table border="1">
-        <thead>
-          <tr style="background-color: #6366f1; color: white;">
-            <th>Date</th>
-            <th>Type</th>
-            <th>Main Category</th>
-            <th>Subcategory</th>
-            <th>Account / Route</th>
-            <th>Amount (${currentCurrency})</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-      txs.forEach(t => {
-        const amt = t.type.includes('Income') ? t.amount : (t.type === 'Transfer' ? t.amount : -t.amount);
-        const accInfo = t.type === 'Transfer' ? `${t.account} -> ${t.toAccount}` : t.account;
-        const cleanSub = stripCategoryPrefix(t.subcategory || '');
-        tableHtml += `<tr>
-          <td>${sanitize(t.date)}</td>
-          <td>${sanitize(t.type)}</td>
-          <td>${sanitize(t.category)}</td>
-          <td>${sanitize(cleanSub)}</td>
-          <td>${sanitize(accInfo)}</td>
-          <td>${amt.toFixed(2)}</td>
-        </tr>`;
-      });
-
-      tableHtml += `</tbody></table>`;
-      const excelDoc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Transactions</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
-        <body>${tableHtml}</body></html>`;
-
-      downloadFile(excelDoc, `Transactions_${new Date().toISOString().split('T')[0]}.xls`, 'application/vnd.ms-excel');
-    }
-
-    /* GOALS & ESSENTIALS LOGIC */
-    function renderGoalsWidget() {
-      const goals = getUserData('goals');
-      const essentials = getUserData('essentials');
-      const txs = getUserData('transactions');
-
-      const activeGoalsCount = goals.length;
-      let onTrackCount = 0;
-
-      const goalsListContainer = document.getElementById('dash-goal-progress-list');
-      goalsListContainer.innerHTML = '';
-
-      if (goals.length === 0) {
-        goalsListContainer.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No goals added yet.</p>';
-      } else {
-        goals.forEach(g => {
-          const pct = Math.min(100, Math.round((g.current / (g.target || 1)) * 100));
-          if (pct >= 40) onTrackCount++;
-
-          const div = document.createElement('div');
-          div.className = 'progress-item';
-          div.innerHTML = `
-            <div class="progress-labels">
-              <span>${sanitize(g.title)}</span>
-              <span style="color:var(--success);">${pct}%</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill" style="width: ${pct}%;"></div>
-            </div>`;
-          goalsListContainer.appendChild(div);
-        });
-      }
-
-      document.getElementById('dash-active-goals-count').textContent = `${activeGoalsCount} Active`;
-      document.getElementById('dash-ontrack-goals-count').textContent = `${onTrackCount} on track`;
-
-      const coveredEssentials = essentials.filter(e => e.status === 'covered').length;
-      document.getElementById('dash-essentials-covered-count').textContent = `${coveredEssentials} of ${essentials.length}`;
-
-      const essentialsListContainer = document.getElementById('dash-essentials-check-list');
-      essentialsListContainer.innerHTML = '';
-
-      if (essentials.length === 0) {
-        essentialsListContainer.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No essential protections recorded.</p>';
-      } else {
-        essentials.forEach(e => {
-          const isSuccess = e.status === 'covered';
-          const iconClass = isSuccess ? 'fa-check success' : 'fa-exclamation warning';
-
-          const item = document.createElement('div');
-          item.className = 'essential-item';
-          item.innerHTML = `
-            <div class="essential-icon ${isSuccess ? 'success' : 'warning'}">
-              <i class="fa-solid ${iconClass}"></i>
-            </div>
-            <div>
-              <div class="essential-info-title">${sanitize(e.title)}</div>
-              <div class="essential-info-sub">${sanitize(e.subtitle)}</div>
-            </div>`;
-          essentialsListContainer.appendChild(item);
-        });
-      }
-
-      const uniqueMonths = new Set();
-      txs.forEach(t => {
-        if (t.date) uniqueMonths.add(t.date.substring(0, 7));
-      });
-      const snapshotCount = Math.max(12, uniqueMonths.size);
-      document.getElementById('dash-snapshots-count').textContent = snapshotCount;
-    }
-
+    /* GOALS AND ESSENTIALS MANAGERS */
     function saveGoal(e) {
       e.preventDefault();
       const editId = document.getElementById('goal-edit-id').value;
@@ -2369,25 +2135,25 @@
       renderAll();
     }
 
+    function editGoal(id) {
+      const goals = getUserData('goals');
+      const item = goals.find(g => g.id === id);
+      if (!item) return;
+
+      document.getElementById('goal-edit-id').value = item.id;
+      document.getElementById('goalTitle').value = item.title;
+      document.getElementById('goalCurrent').value = item.current;
+      document.getElementById('goalTarget').value = item.target;
+
+      document.getElementById('goal-form-title').textContent = 'Edit Financial Goal';
+      document.getElementById('goal-cancel-btn').style.display = 'inline-flex';
+    }
+
     function resetGoalForm() {
       document.getElementById('goalForm').reset();
       document.getElementById('goal-edit-id').value = '';
       document.getElementById('goal-form-title').textContent = 'Add / Edit Financial Goal Progress';
       document.getElementById('goal-cancel-btn').style.display = 'none';
-    }
-
-    function editGoal(id) {
-      const goals = getUserData('goals');
-      const g = goals.find(item => item.id === id);
-      if (!g) return;
-
-      document.getElementById('goal-edit-id').value = g.id;
-      document.getElementById('goalTitle').value = g.title;
-      document.getElementById('goalCurrent').value = g.current;
-      document.getElementById('goalTarget').value = g.target;
-
-      document.getElementById('goal-form-title').textContent = 'Edit Financial Goal';
-      document.getElementById('goal-cancel-btn').style.display = 'inline-flex';
     }
 
     function deleteGoal(id) {
@@ -2402,7 +2168,7 @@
       const editId = document.getElementById('essential-edit-id').value;
       let essentials = getUserData('essentials');
 
-      const itemData = {
+      const essentialData = {
         id: editId ? parseInt(editId) : Date.now(),
         title: document.getElementById('essentialTitle').value,
         subtitle: document.getElementById('essentialSubtitle').value,
@@ -2411,21 +2177,14 @@
 
       if (editId) {
         const idx = essentials.findIndex(item => item.id === parseInt(editId));
-        if (idx !== -1) essentials[idx] = itemData;
+        if (idx !== -1) essentials[idx] = essentialData;
       } else {
-        essentials.push(itemData);
+        essentials.push(essentialData);
       }
 
       setUserData('essentials', essentials);
       resetEssentialForm();
       renderAll();
-    }
-
-    function resetEssentialForm() {
-      document.getElementById('essentialForm').reset();
-      document.getElementById('essential-edit-id').value = '';
-      document.getElementById('essential-form-title').textContent = 'Add / Edit Essential Insurance & Covers';
-      document.getElementById('essential-cancel-btn').style.display = 'none';
     }
 
     function editEssential(id) {
@@ -2438,8 +2197,15 @@
       document.getElementById('essentialSubtitle').value = item.subtitle;
       document.getElementById('essentialStatus').value = item.status;
 
-      document.getElementById('essential-form-title').textContent = 'Edit Essential Cover Record';
+      document.getElementById('essential-form-title').textContent = 'Edit Essential Protection';
       document.getElementById('essential-cancel-btn').style.display = 'inline-flex';
+    }
+
+    function resetEssentialForm() {
+      document.getElementById('essentialForm').reset();
+      document.getElementById('essential-edit-id').value = '';
+      document.getElementById('essential-form-title').textContent = 'Add / Edit Essential Insurance & Covers';
+      document.getElementById('essential-cancel-btn').style.display = 'none';
     }
 
     function deleteEssential(id) {
@@ -2455,42 +2221,95 @@
 
       const goalsTbody = document.getElementById('goals-table-body');
       if (goalsTbody) {
-        goalsTbody.innerHTML = goals.map(g => {
+        goalsTbody.innerHTML = goals.length === 0 ? `<tr><td colspan="5" style="text-align:center;">No goals defined.</td></tr>` : goals.map(g => {
           const pct = Math.min(100, Math.round((g.current / (g.target || 1)) * 100));
           return `
             <tr>
               <td><strong>${sanitize(g.title)}</strong></td>
               <td>${currentCurrency}${g.target.toFixed(2)}</td>
               <td>${currentCurrency}${g.current.toFixed(2)}</td>
-              <td style="font-weight:700; color:var(--success);">${pct}%</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:${pct}%;"></div></div>
+                  <span style="font-size:0.75rem; font-weight:700;">${pct}%</span>
+                </div>
+              </td>
               <td>
                 <button onclick="editGoal(${g.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteGoal(${g.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
               </td>
             </tr>`;
-        }).join('') || '<tr><td colspan="5">No goals defined.</td></tr>';
+        }).join('');
       }
 
       const essentialsTbody = document.getElementById('essentials-table-body');
       if (essentialsTbody) {
-        essentialsTbody.innerHTML = essentials.map(e => `
+        essentialsTbody.innerHTML = essentials.length === 0 ? `<tr><td colspan="4" style="text-align:center;">No essentials defined.</td></tr>` : essentials.map(e => `
           <tr>
             <td><strong>${sanitize(e.title)}</strong></td>
             <td>${sanitize(e.subtitle)}</td>
             <td>
-              <span class="badge ${e.status === 'covered' ? 'badge-income' : 'badge-investment'}">
-                ${e.status === 'covered' ? 'Fully Covered' : 'Attention Needed'}
+              <span class="badge ${e.status === 'covered' ? 'badge-income' : 'badge-expense'}">
+                ${e.status === 'covered' ? 'Covered' : 'Attention Needed'}
               </span>
             </td>
             <td>
               <button onclick="editEssential(${e.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
               <button onclick="deleteEssential(${e.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
             </td>
-          </tr>`).join('') || '<tr><td colspan="4">No essentials defined.</td></tr>';
+          </tr>
+        `).join('');
       }
     }
 
-    /* DASHBOARD FILTER & SUMMARY COMPUTATION */
+    function renderGoalsWidget() {
+      const goals = getUserData('goals');
+      const essentials = getUserData('essentials');
+
+      const activeCount = goals.length;
+      const onTrackCount = goals.filter(g => (g.current / (g.target || 1)) >= 0.5).length;
+      document.getElementById('dash-active-goals-count').textContent = `${activeCount} Active`;
+      document.getElementById('dash-ontrack-goals-count').textContent = `${onTrackCount} on track`;
+
+      const coveredCount = essentials.filter(e => e.status === 'covered').length;
+      document.getElementById('dash-essentials-covered-count').textContent = `${coveredCount} of ${essentials.length}`;
+
+      const txs = getUserData('transactions');
+      document.getElementById('dash-snapshots-count').textContent = txs.length;
+
+      const progressList = document.getElementById('dash-goal-progress-list');
+      if (progressList) {
+        progressList.innerHTML = goals.length === 0 ? `<p style="font-size:0.8rem; color:var(--text-muted);">No active goals.</p>` : goals.slice(0, 3).map(g => {
+          const pct = Math.min(100, Math.round((g.current / (g.target || 1)) * 100));
+          return `
+            <div class="progress-item">
+              <div class="progress-labels">
+                <span>${sanitize(g.title)}</span>
+                <span>${currentCurrency}${g.current.toLocaleString()} / ${currentCurrency}${g.target.toLocaleString()} (${pct}%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: ${pct}%;"></div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      const checkList = document.getElementById('dash-essentials-check-list');
+      if (checkList) {
+        checkList.innerHTML = essentials.length === 0 ? `<p style="font-size:0.8rem; color:var(--text-muted);">No essentials recorded.</p>` : essentials.slice(0, 3).map(e => `
+          <div class="essential-item">
+            <div class="essential-icon ${e.status === 'covered' ? 'success' : 'warning'}">
+              <i class="fa-solid ${e.status === 'covered' ? 'fa-check' : 'fa-exclamation'}"></i>
+            </div>
+            <div>
+              <div class="essential-info-title">${sanitize(e.title)}</div>
+              <div class="essential-info-sub">${sanitize(e.subtitle)}</div>
+            </div>
+          </div>`).join('');
+      }
+    }
+
+    /* DASHBOARD FILTERS & CARDS LOGIC */
     function initDashboardFilterDropdowns() {
       const catSelect = document.getElementById('dash-filter-category');
       if (!catSelect) return;
@@ -2498,52 +2317,59 @@
       catSelect.innerHTML = '<option value="all">All Category</option>';
       const categories = getMasterCategories();
 
+      const allCatNames = new Set();
       Object.keys(categories).forEach(type => {
-        Object.keys(categories[type] || {}).forEach(cat => {
-          const opt = document.createElement('option');
-          opt.value = `${type}||${cat}`;
-          opt.textContent = `[${type}] ${cat}`;
-          catSelect.appendChild(opt);
-        });
+        Object.keys(categories[type]).forEach(cat => allCatNames.add(cat));
+      });
+
+      allCatNames.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        catSelect.appendChild(opt);
       });
 
       populateDashSubcategoryFilter();
     }
 
     function populateDashSubcategoryFilter() {
-      const catVal = document.getElementById('dash-filter-category').value;
+      const selectedCat = document.getElementById('dash-filter-category').value;
       const subSelect = document.getElementById('dash-filter-subcategory');
       if (!subSelect) return;
 
       subSelect.innerHTML = '<option value="all">All Subcategory</option>';
+      const categories = getMasterCategories();
 
-      if (catVal !== 'all') {
-        const [type, cat] = catVal.split('||');
-        const categories = getMasterCategories();
-        const subcats = (categories[type] && categories[type][cat]) ? categories[type][cat] : [];
-
-        subcats.forEach(sub => {
-          const cleanSub = stripCategoryPrefix(sub);
-          const opt = document.createElement('option');
-          opt.value = cleanSub;
-          opt.textContent = cleanSub;
-          subSelect.appendChild(opt);
+      const subSet = new Set();
+      Object.keys(categories).forEach(type => {
+        Object.keys(categories[type]).forEach(cat => {
+          if (selectedCat === 'all' || cat === selectedCat) {
+            categories[type][cat].forEach(sub => subSet.add(stripCategoryPrefix(sub)));
+          }
         });
-      }
+      });
+
+      subSet.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        subSelect.appendChild(opt);
+      });
+
       applyDashboardFilters();
     }
 
     function handlePeriodFilterChange() {
       const period = document.getElementById('dash-filter-period').value;
-      const startGroup = document.getElementById('dash-custom-start-group');
-      const endGroup = document.getElementById('dash-custom-end-group');
+      const customStart = document.getElementById('dash-custom-start-group');
+      const customEnd = document.getElementById('dash-custom-end-group');
 
       if (period === 'custom') {
-        startGroup.style.display = 'flex';
-        endGroup.style.display = 'flex';
+        customStart.style.display = 'flex';
+        customEnd.style.display = 'flex';
       } else {
-        startGroup.style.display = 'none';
-        endGroup.style.display = 'none';
+        customStart.style.display = 'none';
+        customEnd.style.display = 'none';
       }
       applyDashboardFilters();
     }
@@ -2551,43 +2377,55 @@
     function resetDashboardFilters() {
       document.getElementById('dash-filter-period').value = 'all';
       document.getElementById('dash-filter-category').value = 'all';
+      document.getElementById('dash-filter-start').value = '';
+      document.getElementById('dash-filter-end').value = '';
       handlePeriodFilterChange();
       populateDashSubcategoryFilter();
     }
 
     function getFilteredTransactions() {
       let txs = getUserData('transactions');
-      const period = document.getElementById('dash-filter-period') ? document.getElementById('dash-filter-period').value : 'all';
-      const catVal = document.getElementById('dash-filter-category') ? document.getElementById('dash-filter-category').value : 'all';
-      const subVal = document.getElementById('dash-filter-subcategory') ? document.getElementById('dash-filter-subcategory').value : 'all';
+      const period = document.getElementById('dash-filter-period').value;
+      const category = document.getElementById('dash-filter-category').value;
+      const subcategory = document.getElementById('dash-filter-subcategory').value;
 
       const now = new Date();
 
       if (period === 'month') {
-        const currentMonthStr = now.toISOString().substring(0, 7);
-        txs = txs.filter(t => t.date && t.date.substring(0, 7) === currentMonthStr);
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        txs = txs.filter(t => {
+          const d = new Date(t.date);
+          return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        });
       } else if (period === 'week') {
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
-        startOfWeek.setHours(0,0,0,0);
-        txs = txs.filter(t => new Date(t.date) >= startOfWeek);
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(now.getDate() - 7);
+        txs = txs.filter(t => new Date(t.date) >= oneWeekAgo);
       } else if (period === 'year') {
-        const currentYearStr = now.getFullYear().toString();
-        txs = txs.filter(t => t.date && t.date.substring(0, 4) === currentYearStr);
+        const currentYear = now.getFullYear();
+        txs = txs.filter(t => new Date(t.date).getFullYear() === currentYear);
       } else if (period === 'custom') {
-        const startDate = document.getElementById('dash-filter-start').value;
-        const endDate = document.getElementById('dash-filter-end').value;
-        if (startDate) txs = txs.filter(t => t.date >= startDate);
-        if (endDate) txs = txs.filter(t => t.date <= endDate);
+        const startVal = document.getElementById('dash-filter-start').value;
+        const endVal = document.getElementById('dash-filter-end').value;
+
+        if (startVal) {
+          const startDate = new Date(startVal);
+          txs = txs.filter(t => new Date(t.date) >= startDate);
+        }
+        if (endVal) {
+          const endDate = new Date(endVal);
+          endDate.setHours(23, 59, 59, 999);
+          txs = txs.filter(t => new Date(t.date) <= endDate);
+        }
       }
 
-      if (catVal !== 'all') {
-        const [type, cat] = catVal.split('||');
-        txs = txs.filter(t => t.type === type && t.category === cat);
+      if (category !== 'all') {
+        txs = txs.filter(t => t.category === category);
       }
 
-      if (subVal !== 'all') {
-        txs = txs.filter(t => stripCategoryPrefix(t.subcategory) === stripCategoryPrefix(subVal));
+      if (subcategory !== 'all') {
+        txs = txs.filter(t => stripCategoryPrefix(t.subcategory) === subcategory);
       }
 
       return txs;
@@ -2604,14 +2442,10 @@
       const investments = getUserData('investments');
       const emis = getUserData('emis');
 
-      let inc = 0, exp = 0;
-      filteredTxs.forEach(t => {
-        if (t.type === 'Income') inc += t.amount;
-        if (t.type === 'Expense') exp += t.amount;
-      });
-
       const todayStr = new Date().toISOString().split('T')[0];
-      let todayInc = 0, todayExp = 0;
+      let todayInc = 0;
+      let todayExp = 0;
+
       allTxs.forEach(t => {
         if (t.date === todayStr) {
           if (t.type === 'Income') todayInc += t.amount;
@@ -2621,45 +2455,57 @@
 
       document.getElementById('dash-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
       document.getElementById('dash-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
-      document.getElementById('dash-today-balance').textContent = `${currentCurrency}${(todayInc - todayExp).toFixed(2)}`;
+      const netToday = todayInc - todayExp;
+      document.getElementById('dash-today-balance').textContent = `${netToday >= 0 ? '+' : ''}${currentCurrency}${netToday.toFixed(2)}`;
+      document.getElementById('dash-today-balance').style.color = netToday >= 0 ? 'var(--success)' : 'var(--danger)';
+
+      let inc = 0;
+      let exp = 0;
+
+      filteredTxs.forEach(t => {
+        if (t.type === 'Income') inc += t.amount;
+        if (t.type === 'Expense') exp += t.amount;
+      });
+
+      const totalInv = investments.reduce((sum, i) => sum + i.amount, 0);
+      const totalEmi = emis.reduce((sum, e) => sum + calculateMonthlyEMI(e.principal, e.rate, e.tenure), 0);
 
       document.getElementById('dash-total-income').textContent = `${currentCurrency}${inc.toFixed(2)}`;
       document.getElementById('dash-total-expense').textContent = `${currentCurrency}${exp.toFixed(2)}`;
       document.getElementById('dash-total-balance').textContent = `${currentCurrency}${(inc - exp).toFixed(2)}`;
-
-      const totalInv = investments.reduce((sum, item) => sum + item.amount, 0);
       document.getElementById('dash-total-investment').textContent = `${currentCurrency}${totalInv.toFixed(2)}`;
-
-      const totalEmi = emis.reduce((sum, item) => sum + item.monthlyEmi, 0);
       document.getElementById('dash-total-emi').textContent = `${currentCurrency}${totalEmi.toFixed(2)}`;
     }
 
+    /* CHARTS ENGINE */
     function renderCharts() {
       const filteredTxs = getFilteredTransactions();
 
-      let inc = 0, exp = 0;
-      const categoryMap = {};
+      let income = 0;
+      let expense = 0;
+      const catTotals = {};
 
       filteredTxs.forEach(t => {
-        if (t.type === 'Income') inc += t.amount;
+        if (t.type === 'Income') income += t.amount;
         if (t.type === 'Expense') {
-          exp += t.amount;
-          categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+          expense += t.amount;
+          catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
         }
       });
 
-      // Bar Chart
-      const barCtx = document.getElementById('barChart').getContext('2d');
+      // Bar Chart - Income vs Expense
+      const ctxBar = document.getElementById('barChart').getContext('2d');
       if (barChartInstance) barChartInstance.destroy();
 
-      barChartInstance = new Chart(barCtx, {
+      barChartInstance = new Chart(ctxBar, {
         type: 'bar',
         data: {
-          labels: ['Income', 'Expense'],
+          labels: ['Total Income', 'Total Expense'],
           datasets: [{
-            label: 'Amount',
-            data: [inc, exp],
-            backgroundColor: ['#10b981', '#ef4444'],
+            data: [income, expense],
+            backgroundColor: ['rgba(16, 185, 129, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+            borderColor: ['#10b981', '#ef4444'],
+            borderWidth: 1,
             borderRadius: 8
           }]
         },
@@ -2667,101 +2513,114 @@
           responsive: true,
           plugins: { legend: { display: false } },
           scales: {
-            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
             x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
           }
         }
       });
 
-      // Pie/Donut Chart
-      const pieCtx = document.getElementById('pieChart').getContext('2d');
+      // Pie Chart - Expense Category Distribution
+      const ctxPie = document.getElementById('pieChart').getContext('2d');
       if (pieChartInstance) pieChartInstance.destroy();
 
-      const catLabels = Object.keys(categoryMap);
-      const catData = Object.values(categoryMap);
-      const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
+      const pieLabels = Object.keys(catTotals);
+      const pieData = Object.values(catTotals);
 
-      pieChartInstance = new Chart(pieCtx, {
+      const defaultColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
+
+      pieChartInstance = new Chart(ctxPie, {
         type: 'doughnut',
         data: {
-          labels: catLabels,
+          labels: pieLabels.length === 0 ? ['No Expenses'] : pieLabels,
           datasets: [{
-            data: catData,
-            backgroundColor: colors.slice(0, catLabels.length)
+            data: pieData.length === 0 ? [1] : pieData,
+            backgroundColor: pieData.length === 0 ? ['rgba(255,255,255,0.1)'] : defaultColors.slice(0, pieLabels.length),
+            borderWidth: 0
           }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } }
+          plugins: { legend: { display: false } },
+          cutout: '70%'
         }
       });
 
       const legendList = document.getElementById('category-legend-list');
       if (legendList) {
-        legendList.innerHTML = catLabels.map((c, i) => `
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span><i class="fa-solid fa-circle" style="color:${colors[i % colors.length]}; font-size:0.7rem;"></i> ${sanitize(c)}</span>
-            <strong>${currentCurrency}${categoryMap[c].toFixed(2)}</strong>
-          </div>`).join('') || '<span style="color:var(--text-muted);">No expense data in filter window.</span>';
+        if (pieLabels.length === 0) {
+          legendList.innerHTML = '<span style="color:var(--text-muted);">No expense entries logged for this timeframe.</span>';
+        } else {
+          legendList.innerHTML = pieLabels.map((cat, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="display:inline-flex; align-items:center; gap:8px;">
+                <span style="width:10px; height:10px; border-radius:50%; background:${defaultColors[i % defaultColors.length]}; display:inline-block;"></span>
+                ${sanitize(cat)}
+              </span>
+              <strong>${currentCurrency}${catTotals[cat].toFixed(2)}</strong>
+            </div>
+          `).join('');
+        }
       }
     }
 
-    /* CALENDAR SPENDING MANAGER */
-    function renderCalendar() {
-      const container = document.getElementById('calendar-days-container');
-      const title = document.getElementById('calendar-month-year-title');
-      if (!container || !title) return;
+    /* SPENDING MANAGER CALENDAR */
+    function changeCalendarMonth(offset) {
+      calendarDate.setMonth(calendarDate.getMonth() + offset);
+      renderCalendar();
+    }
 
+    function renderCalendar() {
       const year = calendarDate.getFullYear();
       const month = calendarDate.getMonth();
 
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      title.textContent = `${monthNames[month]} ${year}`;
+      document.getElementById('calendar-month-year-title').textContent = `${monthNames[month]} ${year}`;
 
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const prevMonthDays = new Date(year, month, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      const container = document.getElementById('calendar-days-container');
+      container.innerHTML = '';
 
       const txs = getUserData('transactions');
-      let html = '';
 
-      // Previous month padding
+      // Previous month days fill
       for (let i = firstDay - 1; i >= 0; i--) {
-        html += `<div class="calendar-cell other-month"><div class="calendar-date-num">${prevMonthDays - i}</div></div>`;
+        const dayNum = daysInPrevMonth - i;
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell other-month';
+        cell.innerHTML = `<div class="calendar-date-num">${dayNum}</div>`;
+        container.appendChild(cell);
       }
 
-      // Current month days
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      // Current month days fill
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const dayTxs = txs.filter(t => t.date === dateStr);
 
-        let dotsHtml = '';
-        if (dayTxs.some(t => t.type === 'Income')) dotsHtml += `<div class="dot dot-inc"></div>`;
-        if (dayTxs.some(t => t.type === 'Expense')) dotsHtml += `<div class="dot dot-exp"></div>`;
+        const hasInc = dayTxs.some(t => t.type === 'Income');
+        const hasExp = dayTxs.some(t => t.type === 'Expense');
 
-        html += `
-          <div class="calendar-cell" onclick="selectCalendarDate('${dateStr}')">
-            <div class="calendar-date-num">${day}</div>
-            <div class="calendar-dots">${dotsHtml}</div>
+        const cell = document.createElement('div');
+        cell.className = 'calendar-cell';
+        cell.onclick = () => showCalendarDayTransactions(dateStr, dayTxs);
+
+        cell.innerHTML = `
+          <div class="calendar-date-num">${d}</div>
+          <div class="calendar-dots">
+            ${hasInc ? '<span class="dot dot-inc"></span>' : ''}
+            ${hasExp ? '<span class="dot dot-exp"></span>' : ''}
           </div>`;
+        container.appendChild(cell);
       }
-
-      container.innerHTML = html;
     }
 
-    function changeCalendarMonth(delta) {
-      calendarDate.setMonth(calendarDate.getMonth() + delta);
-      renderCalendar();
-    }
-
-    function selectCalendarDate(dateStr) {
-      const title = document.getElementById('selected-date-title');
+    function showCalendarDayTransactions(dateStr, dayTxs) {
+      document.getElementById('selected-date-title').textContent = `Transactions for ${dateStr}`;
       const container = document.getElementById('selected-date-tx-list');
 
-      title.textContent = `Transactions for ${dateStr}`;
-      const txs = getUserData('transactions').filter(t => t.date === dateStr);
-
-      if (txs.length === 0) {
+      if (!dayTxs || dayTxs.length === 0) {
         container.innerHTML = '<p style="color:var(--text-muted);">No entries logged for this date.</p>';
         return;
       }
@@ -2773,75 +2632,156 @@
               <tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Account</th><th>Amount</th></tr>
             </thead>
             <tbody>
-              ${txs.map(t => `
+              ${dayTxs.map(t => `
                 <tr>
                   <td><span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span></td>
                   <td>${sanitize(t.category)}</td>
                   <td>${sanitize(stripCategoryPrefix(t.subcategory))}</td>
                   <td>${sanitize(t.account)}</td>
                   <td style="font-weight:700; color:${t.type.includes('Income') ? 'var(--success)' : 'var(--danger)'}">
-                    ${currentCurrency}${t.amount.toFixed(2)}
+                    ${t.type.includes('Income') ? '+' : '-'}${currentCurrency}${t.amount.toFixed(2)}
                   </td>
-                </tr>`).join('')}
+                </tr>
+              `).join('')}
             </tbody>
           </table>
         </div>`;
     }
 
-    /* BUDGET & INSIGHTS */
+    /* BUDGET & INSIGHTS PAGE CHARTS */
     function renderInsightsCharts() {
       const txs = getUserData('transactions');
-      const months = {};
-
+      
+      const monthlyData = {};
       txs.forEach(t => {
-        if (!t.date) return;
-        const m = t.date.substring(0, 7);
-        if (!months[m]) months[m] = { inc: 0, exp: 0 };
-        if (t.type === 'Income') months[m].inc += t.amount;
-        if (t.type === 'Expense') months[m].exp += t.amount;
+        const monthKey = t.date.substring(0, 7); // YYYY-MM
+        if (!monthlyData[monthKey]) monthlyData[monthKey] = { income: 0, expense: 0, categories: {} };
+        if (t.type === 'Income') monthlyData[monthKey].income += t.amount;
+        if (t.type === 'Expense') {
+          monthlyData[monthKey].expense += t.amount;
+          monthlyData[monthKey].categories[t.category] = (monthlyData[monthKey].categories[t.category] || 0) + t.amount;
+        }
       });
 
-      const sortedMonths = Object.keys(months).sort();
-      const incData = sortedMonths.map(m => months[m].inc);
-      const expData = sortedMonths.map(m => months[m].exp);
+      const sortedMonths = Object.keys(monthlyData).sort();
 
-      const lineCtx = document.getElementById('lineTrendChart').getContext('2d');
+      // Trend Line Chart
+      const ctxLine = document.getElementById('lineTrendChart').getContext('2d');
       if (lineTrendChartInstance) lineTrendChartInstance.destroy();
 
-      lineTrendChartInstance = new Chart(lineCtx, {
+      lineTrendChartInstance = new Chart(ctxLine, {
         type: 'line',
         data: {
-          labels: sortedMonths,
+          labels: sortedMonths.length === 0 ? ['No Data'] : sortedMonths,
           datasets: [
-            { label: 'Income', data: incData, borderColor: '#10b981', tension: 0.3 },
-            { label: 'Expense', data: expData, borderColor: '#ef4444', tension: 0.3 }
+            {
+              label: 'Income Trend',
+              data: sortedMonths.map(m => monthlyData[m].income),
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Expense Trend',
+              data: sortedMonths.map(m => monthlyData[m].expense),
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              fill: true,
+              tension: 0.3
+            }
           ]
         },
         options: {
           responsive: true,
+          plugins: { legend: { labels: { color: '#94a3b8' } } },
           scales: {
-            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            x: { ticks: { color: '#94a3b8' } }
+            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
           }
         }
       });
+
+      // Category Expenditure Trends Stacked/Bar
+      const ctxCatTrend = document.getElementById('categoryTrendChart').getContext('2d');
+      if (categoryTrendChartInstance) categoryTrendChartInstance.destroy();
+
+      const allCatNames = new Set();
+      sortedMonths.forEach(m => {
+        Object.keys(monthlyData[m].categories).forEach(c => allCatNames.add(c));
+      });
+
+      const catList = Array.from(allCatNames);
+      const defaultColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
+
+      const categoryDatasets = catList.map((cat, idx) => ({
+        label: cat,
+        data: sortedMonths.map(m => monthlyData[m].categories[cat] || 0),
+        backgroundColor: defaultColors[idx % defaultColors.length]
+      }));
+
+      categoryTrendChartInstance = new Chart(ctxCatTrend, {
+        type: 'bar',
+        data: {
+          labels: sortedMonths.length === 0 ? ['No Data'] : sortedMonths,
+          datasets: categoryDatasets
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          scales: {
+            x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } },
+            y: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+          }
+        }
+      });
+
+      const listContainer = document.getElementById('insights-category-list');
+      if (listContainer) {
+        let totalAllExpense = 0;
+        const totalByCat = {};
+        txs.forEach(t => {
+          if (t.type === 'Expense') {
+            totalAllExpense += t.amount;
+            totalByCat[t.category] = (totalByCat[t.category] || 0) + t.amount;
+          }
+        });
+
+        listContainer.innerHTML = Object.keys(totalByCat).length === 0 ? '<p style="color:var(--text-muted);">No expense entries logged.</p>' : Object.keys(totalByCat).map(c => {
+          const pct = Math.round((totalByCat[c] / (totalAllExpense || 1)) * 100);
+          return `
+            <div style="margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span>${sanitize(c)}</span>
+                <strong>${currentCurrency}${totalByCat[c].toFixed(2)} (${pct}%)</strong>
+              </div>
+              <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+            </div>`;
+        }).join('');
+      }
     }
 
-    /* SMART WIDGETS */
+    /* SMART WIDGETS RENDER */
     function renderSmartWidgets() {
       const txs = getUserData('transactions');
       const todayStr = new Date().toISOString().split('T')[0];
-      const monthStr = new Date().toISOString().substring(0, 7);
 
-      let todayExp = 0, todayInc = 0;
-      let monthInc = 0, monthExp = 0;
+      let todayInc = 0;
+      let todayExp = 0;
+
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      let monthInc = 0;
+      let monthExp = 0;
 
       txs.forEach(t => {
         if (t.date === todayStr) {
-          if (t.type === 'Expense') todayExp += t.amount;
           if (t.type === 'Income') todayInc += t.amount;
+          if (t.type === 'Expense') todayExp += t.amount;
         }
-        if (t.date && t.date.substring(0, 7) === monthStr) {
+
+        const d = new Date(t.date);
+        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
           if (t.type === 'Income') monthInc += t.amount;
           if (t.type === 'Expense') monthExp += t.amount;
         }
@@ -2850,57 +2790,162 @@
       document.getElementById('widget-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
       document.getElementById('widget-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
 
-      const surplus = monthInc - monthExp;
-      document.getElementById('widget-month-surplus').textContent = `${currentCurrency}${surplus.toFixed(2)}`;
+      const monthSurplus = monthInc - monthExp;
+      document.getElementById('widget-month-surplus').textContent = `${currentCurrency}${monthSurplus.toFixed(2)}`;
+      document.getElementById('widget-month-surplus').style.color = monthSurplus >= 0 ? 'var(--success)' : 'var(--danger)';
+
       const ratio = monthInc > 0 ? Math.round((monthExp / monthInc) * 100) : 0;
       document.getElementById('widget-month-ratio').textContent = `${ratio}%`;
     }
 
-    /* MONTHLY SUMMARIES */
+    /* MONTHLY SUMMARIES RENDER */
     function renderMonthlySummaries() {
       const txs = getUserData('transactions');
-      const months = {};
+      const monthlyMap = {};
 
       txs.forEach(t => {
-        if (!t.date) return;
-        const m = t.date.substring(0, 7);
-        if (!months[m]) months[m] = { inc: 0, exp: 0 };
-        if (t.type === 'Income') months[m].inc += t.amount;
-        if (t.type === 'Expense') months[m].exp += t.amount;
+        const monthKey = t.date.substring(0, 7);
+        if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { income: 0, expense: 0 };
+        if (t.type === 'Income') monthlyMap[monthKey].income += t.amount;
+        if (t.type === 'Expense') monthlyMap[monthKey].expense += t.amount;
       });
 
       const container = document.getElementById('monthly-summary-container');
-      if (!container) return;
+      const months = Object.keys(monthlyMap).sort().reverse();
 
-      const sortedMonths = Object.keys(months).sort().reverse();
-      if (sortedMonths.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No monthly data logged yet.</p>';
+      if (months.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No monthly data recorded yet.</p>';
         return;
       }
 
-      container.innerHTML = sortedMonths.map(m => {
-        const net = months[m].inc - months[m].exp;
+      container.innerHTML = months.map(m => {
+        const inc = monthlyMap[m].income;
+        const exp = monthlyMap[m].expense;
+        const net = inc - exp;
         return `
           <div class="summary-card">
             <div>
-              <div style="font-weight:800; font-size:1.1rem; color:#fff;">${m}</div>
-              <div style="font-size:0.8rem; color:var(--text-muted);">Monthly Financial Statement</div>
+              <h4 style="font-size:1.1rem; font-weight:800;">${m}</h4>
+              <span style="font-size:0.8rem; color:var(--text-muted);">Monthly Financial Statement</span>
             </div>
             <div style="display:flex; gap:24px;">
               <div>
                 <div style="font-size:0.75rem; color:var(--text-muted);">Income</div>
-                <div style="color:var(--success); font-weight:700;">${currentCurrency}${months[m].inc.toFixed(2)}</div>
+                <div style="font-weight:800; color:var(--success);">${currentCurrency}${inc.toFixed(2)}</div>
               </div>
               <div>
                 <div style="font-size:0.75rem; color:var(--text-muted);">Expense</div>
-                <div style="color:var(--danger); font-weight:700;">${currentCurrency}${months[m].exp.toFixed(2)}</div>
+                <div style="font-weight:800; color:var(--danger);">${currentCurrency}${exp.toFixed(2)}</div>
               </div>
               <div>
                 <div style="font-size:0.75rem; color:var(--text-muted);">Net Margin</div>
-                <div style="color:${net >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:800;">${currentCurrency}${net.toFixed(2)}</div>
+                <div style="font-weight:800; color:${net >= 0 ? 'var(--success)' : 'var(--danger)'};">${net >= 0 ? '+' : ''}${currentCurrency}${net.toFixed(2)}</div>
               </div>
             </div>
           </div>`;
+      }).join('');
+    }
+
+    /* EXPORT LOGIC */
+    function exportTransactionsCSV() {
+      const txs = getUserData('transactions');
+      if (txs.length === 0) { alert('No transactions available to export.'); return; }
+
+      let csv = 'ID,Date,Type,Category,Subcategory,Account,ToAccount,Amount\n';
+      txs.forEach(t => {
+        csv += `"${t.id}","${t.date}","${t.type}","${t.category}","${stripCategoryPrefix(t.subcategory)}","${t.account}","${t.toAccount || ''}","${t.amount}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Sri_Renga_Vilas_Transactions_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    function exportTransactionsExcel() {
+      exportTransactionsCSV();
+    }
+
+    /* ADMIN PANEL LOGIC */
+    function addAdminCategory(e) {
+      e.preventDefault();
+      const type = document.getElementById('admin-cat-type').value;
+      const catName = document.getElementById('admin-cat-name').value.trim();
+      const subcatRaw = document.getElementById('admin-subcat-list').value;
+
+      if (!catName || !subcatRaw) return;
+
+      const subcatList = subcatRaw.split(',').map(s => stripCategoryPrefix(s.trim())).filter(s => s.length > 0);
+
+      let categories = getMasterCategories();
+      if (!categories[type]) categories[type] = {};
+      categories[type][catName] = subcatList;
+
+      localStorage.setItem('srv_categories', JSON.stringify(categories));
+      document.getElementById('admin-cat-name').value = '';
+      document.getElementById('admin-subcat-list').value = '';
+      renderAdminCategoryTable();
+      handleTypeChange();
+      initDashboardFilterDropdowns();
+    }
+
+    function deleteAdminCategory(type, catName) {
+      let categories = getMasterCategories();
+      if (categories[type] && categories[type][catName]) {
+        delete categories[type][catName];
+        localStorage.setItem('srv_categories', JSON.stringify(categories));
+        renderAdminCategoryTable();
+        handleTypeChange();
+        initDashboardFilterDropdowns();
+      }
+    }
+
+    function renderAdminCategoryTable() {
+      const categories = getMasterCategories();
+      const tbody = document.getElementById('admin-cat-table-body');
+      if (!tbody) return;
+
+      let rows = '';
+      Object.keys(categories).forEach(type => {
+        Object.keys(categories[type]).forEach(cat => {
+          const subcats = categories[type][cat].map(s => stripCategoryPrefix(s)).join(', ');
+          rows += `
+            <tr>
+              <td><span class="badge ${getBadgeClass(type)}">${sanitize(type)}</span></td>
+              <td><strong>${sanitize(cat)}</strong></td>
+              <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(subcats)}</td>
+              <td>
+                <button onclick="deleteAdminCategory('${type}', '${cat}')" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>`;
+        });
+      });
+
+      tbody.innerHTML = rows || '<tr><td colspan="4" style="text-align:center;">No custom categories defined.</td></tr>';
+    }
+
+    function renderAdminUsersTable() {
+      const users = JSON.parse(localStorage.getItem('srv_users')) || [];
+      const tbody = document.getElementById('admin-users-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = users.map(u => {
+        const txs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_transactions`)) || [];
+        const invs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_investments`)) || [];
+        const emis = JSON.parse(localStorage.getItem(`srv_data_${u.id}_emis`)) || [];
+
+        return `
+          <tr>
+            <td><strong>${sanitize(u.name)}</strong></td>
+            <td>${sanitize(u.username)}</td>
+            <td>${sanitize(u.phone || 'N/A')}</td>
+            <td><span class="badge ${u.role === 'admin' ? 'badge-income' : 'badge-transfer'}">${sanitize(u.role)}</span></td>
+            <td>${txs.length} Entries</td>
+            <td>${invs.length} Assets</td>
+            <td>${emis.length} Loans</td>
+          </tr>`;
       }).join('');
     }
   </script>

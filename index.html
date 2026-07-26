@@ -420,10 +420,10 @@
       <li class="nav-item" onclick="switchTab('insights')"><i class="fa-solid fa-chart-line"></i> Budget & Insights</li>
       <li class="nav-item" onclick="switchTab('widgets')"><i class="fa-solid fa-widgets"></i> Smart Widgets</li>
       <li class="nav-item" onclick="switchTab('summary')"><i class="fa-solid fa-receipt"></i> Monthly Summaries</li>
-      <li class="nav-item" onclick="switchTab('investments')"><i class="fa-solid fa-coins"></i> Investments</li>
+      <li class="nav-item" onclick="switchTab('investments')"><i class="fa-solid fa-coins"></i> Investment</li>
       <li class="nav-item" onclick="switchTab('emi')"><i class="fa-solid fa-calculator"></i> Active EMIs</li>
       <li class="nav-item admin-only" id="admin-nav-item" style="display:none;" onclick="switchTab('admin')">
-        <i class="fa-solid fa-user-shield"></i> Category Control
+        <i class="fa-solid fa-user-shield"></i> User & Category Control
       </li>
     </ul>
 
@@ -537,13 +537,13 @@
           <div class="form-group">
             <label>Filter Category</label>
             <select id="dash-filter-category" onchange="populateDashSubcategoryFilter()">
-              <option value="all">All Categories</option>
+              <option value="all">All Category</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Filter Sub Category</label>
+            <label>Filter Subcategory</label>
             <select id="dash-filter-subcategory" onchange="applyDashboardFilters()">
-              <option value="all">All Sub Categories</option>
+              <option value="all">All Subcategory</option>
             </select>
           </div>
         </div>
@@ -583,11 +583,11 @@
           <div class="stat-amount" id="dash-total-income" style="color: var(--success);">₹0.00</div>
         </div>
         <div class="card_3d">
-          <div class="stat-header"><span>Filtered Expenses</span></div>
+          <div class="stat-header"><span>Filtered Expense</span></div>
           <div class="stat-amount" id="dash-total-expense" style="color: var(--danger);">₹0.00</div>
         </div>
         <div class="card_3d">
-          <div class="stat-header"><span>Total Investments</span></div>
+          <div class="stat-header"><span>Total Investment</span></div>
           <div class="stat-amount" id="dash-total-investment" style="color: var(--warning);">₹0.00</div>
         </div>
         <div class="card_3d">
@@ -621,7 +621,7 @@
               <input type="text" id="goalTitle" placeholder="e.g. Retirement, Emergency Fund, Child Education" required>
             </div>
             <div class="form-group">
-              <label>Current Saved Value</label>
+              <label>Current Savings Value</label>
               <input type="number" step="0.01" id="goalCurrent" placeholder="0.00" required>
             </div>
             <div class="form-group">
@@ -721,7 +721,7 @@
               <select id="txCategory" onchange="populateSubcategories()" required></select>
             </div>
             <div class="form-group">
-              <label>Sub Category</label>
+              <label>Subcategory</label>
               <select id="txSubcategory" required></select>
             </div>
             <div class="form-group">
@@ -865,13 +865,13 @@
             <div class="form-group">
               <label>Asset Class Category</label>
               <select id="invType" required>
-                <option value="INVESTMENT - Business">INVESTMENT - Business</option>
-                <option value="INVESTMENT - Gold">INVESTMENT - Gold</option>
-                <option value="INVESTMENT - FD/RD">INVESTMENT - FD/RD</option>
-                <option value="INVESTMENT (short term)- SIP , Mutual Funds">INVESTMENT (short term)- SIP , Mutual Funds</option>
-                <option value="INVESTMENT - post office schemes">INVESTMENT - post office schemes</option>
-                <option value="INVESTMENT - Real Estate">INVESTMENT - Real Estate</option>
-                <option value="INVESTMENT (long term)- SIP , Mutual Funds,insurance">INVESTMENT (long term)- SIP , Mutual Funds,insurance</option>
+                <option value="Business">Business</option>
+                <option value="Gold">Gold</option>
+                <option value="FD/RD">FD/RD</option>
+                <option value="(short term)- SIP , Mutual Funds">(short term)- SIP , Mutual Funds</option>
+                <option value="post office schemes">post office schemes</option>
+                <option value="Real Estate">Real Estate</option>
+                <option value="(long term)- SIP , Mutual Funds,insurance">(long term)- SIP , Mutual Funds,insurance</option>
               </select>
             </div>
             <div class="form-group">
@@ -950,6 +950,18 @@
     <!-- ADMIN PANEL -->
     <div id="page-admin" class="view-page">
       <div class="card_3d" style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 16px; font-size: 1.1rem;">User Details & Activity Directory</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Username / Email</th><th>Phone</th><th>Role</th><th>Total Transactions</th><th>Total Investments</th><th>Total EMIs</th></tr>
+            </thead>
+            <tbody id="admin-users-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card_3d" style="margin-bottom: 24px;">
         <h3 style="margin-bottom: 16px; font-size: 1.1rem;">Customize Account Types & Banks</h3>
         <form onsubmit="addAdminAccount(event)">
           <div class="form-grid">
@@ -1019,12 +1031,12 @@
     const defaultCategories = {
       "Income": {
         "Income": [
-          "Income - Salary,Pension",
-          "Income - Allowances",
-          "Income - Bonus,interest,divident",
-          "Income - Passive Income",
-          "Income - Investment return,refunds",
-          "Income - loan , Others"
+          "Salary,Pension",
+          "Allowances",
+          "Bonus,interest,divident",
+          "Passive Income",
+          "Investment return,refunds",
+          "loan , Others"
         ]
       },
       "Expense": {
@@ -1035,70 +1047,70 @@
           "Maintenance"
         ],
         "FOOD": [
-          "FOOD - Grocery , Cereals,Edible main",
-          "FOOD - Vegetables",
-          "FOOD - Meat",
-          "FOOD - Cooking utensils",
-          "FOOD - Snacks ,Juices, Tea",
-          "FOOD - Fruits, Nuts, Nutrition",
-          "FOOD - Hotels"
+          "Grocery , Cereals,Edible main",
+          "Vegetables",
+          "Meat",
+          "Cooking utensils",
+          "Snacks ,Juices, Tea",
+          "Fruits, Nuts, Nutrition",
+          "Hotels"
         ],
         "TRANSPORT": [
-          "TRANSPORT - Petrol / Diesel",
-          "TRANSPORT -Vehicle Fare , Parking"
+          "Petrol / Diesel",
+          "Vehicle Fare , Parking"
         ],
         "Home Needs": [
-          "Home Needs - Parents",
-          "Home Needs - Rent",
-          "Home Needs - EB Bill , Water (utility)",
-          "Home Needs - Internet ,Wifi , Mobile & TV recharge",
-          "Home Needs - Home Accessories",
-          "Home Needs - washing liquid,soap, Slippers",
-          "Home Needs - Subscription, gym, newspaper etc",
-          "Home Needs - Dress,Shopping"
+          "Parents",
+          "Rent",
+          "EB Bill , Water (utility)",
+          "Internet ,Wifi , Mobile & TV recharge",
+          "Home Accessories",
+          "washing liquid,soap, Slippers",
+          "Subscription, gym, newspaper etc",
+          "Dress,Shopping"
         ],
         "MEDICAL": [
-          "MEDICAL - Hospital Expenses",
-          "MEDICAL - Medicine , Special Foods"
+          "Hospital Expenses",
+          "Medicine , Special Foods"
         ],
         "COSMETICS": [
-          "COSMETICS - Prefume , Attar (fragrance)",
-          "COSMETICS - Talcum Powder , Cream , oil,Tissues",
-          "COSMETICS - Related Products",
-          "COSMETICS - Soap, Shampoo, FaceWash etc"
+          "Prefume , Attar (fragrance)",
+          "Talcum Powder , Cream , oil,Tissues",
+          "Related Products",
+          "Soap, Shampoo, FaceWash etc"
         ],
         "EDUCATION": [
-          "EDUCATION - Monthly institute Fees",
-          "EDUCATION - Co curricular related costs"
+          "Monthly institute Fees",
+          "Co curricular related costs"
         ],
         "JOB-BUSINESS": [
-          "JOB-BUSINESS - Business Related Travel,Accomodation",
-          "JOB-BUSINESS - upskilling",
-          "JOB-BUSINESS- investment in Asserts (plan to Procure for business)",
-          "JOB-BUSINESS - Social life's give/sponsor/food"
+          "Business Related Travel,Accomodation",
+          "upskilling",
+          "investment in Asserts (plan to Procure for business)",
+          "Social life's give/sponsor/food"
         ],
         "POOJA Things": [
-          "POOJA - Other Cost",
-          "POOJA - Temple / Pooja related Things",
-          "POOJA - Related Trip"
+          "Other Cost",
+          "Temple / Pooja related Things",
+          "Related Trip"
         ],
         "ENTERTAINMENT": [
-          "ENTERTAINMENT - Outing's Travel, Accomodation",
-          "ENTERTAINMENT - Entry ticket,parking ,things buy"
+          "Outing's Travel, Accomodation",
+          "Entry ticket,parking ,things buy"
         ],
         "EMI / LOAN": [
-          "EMI Loan taken (liability)",
+          "Loan taken (liability)",
           "Loan Given to others (asset /receivables)"
         ],
         "EMERGENCY": [
-          "EMERGENCY - Moi (returnable)",
-          "EMERGENCY - Donation (non return)"
+          "Moi (returnable)",
+          "Donation (non return)"
         ],
         "Maintenance": [
-          "Maintenance - vehicle related Service",
-          "Maintenance - Fine , Penalty , Tax ,license renewal",
-          "Maintenance (service) - Dress washing, cosmetics,electronics etc",
-          "Maintenance (product) - Building , Plumbing & asset maintenance etc"
+          "vehicle related Service",
+          "Fine , Penalty , Tax ,license renewal",
+          "(service) - Dress washing, cosmetics,electronics etc",
+          "(product) - Building , Plumbing & asset maintenance etc"
         ]
       },
       "Transfer": {
@@ -1112,23 +1124,23 @@
       },
       "Savings": {
         "SAVINGS": [
-          "SAVINGS Plan for Future- Home all hardware products",
-          "SAVINGS - Education, Medicine, marriage",
-          "SAVINGS - vehicle, Electronics ,Property Asset (buy,maintain)",
-          "Savings - investments schemes",
-          "Savings - Emergency Fund",
-          "Savings - Other"
+          "Plan for Future- Home all hardware products",
+          "Education, Medicine, marriage",
+          "vehicle, Electronics ,Property Asset (buy,maintain)",
+          "investments schemes",
+          "Emergency Fund",
+          "Other"
         ]
       },
       "Investment": {
         "INVESTMENT": [
-          "INVESTMENT - Business",
-          "INVESTMENT - Gold",
-          "INVESTMENT - FD/RD",
-          "INVESTMENT (short term)- SIP , Mutual Funds",
-          "INVESTMENT - post office schemes",
-          "INVESTMENT - Real Estate",
-          "INVESTMENT (long term)- SIP , Mutual Funds,insurance"
+          "Business",
+          "Gold",
+          "FD/RD",
+          "(short term)- SIP , Mutual Funds",
+          "post office schemes",
+          "Real Estate",
+          "(long term)- SIP , Mutual Funds,insurance"
         ]
       }
     };
@@ -1177,6 +1189,7 @@
           name: 'Administrator',
           username: 'admin',
           email: 'admin@srirenga.com',
+          phone: '+91 0000000000',
           password: 'admin',
           role: 'admin'
         });
@@ -1393,6 +1406,21 @@
       renderAll();
     }
 
+    function renderAll() {
+      if (!currentUser) return;
+      renderTransactions();
+      renderInvestments();
+      renderEMIs();
+      renderGoalsAndEssentialsTables();
+      renderGoalsWidget();
+      updateDashboardCards();
+      renderCharts();
+      if (document.getElementById('page-admin').classList.contains('active')) {
+        renderAdminCategoryTable();
+        renderAdminUsersTable();
+      }
+    }
+
     function switchTab(tabId) {
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
@@ -1411,9 +1439,9 @@
         insights: 'Budget & Insights (Analytics & Trends)',
         widgets: 'Smart Widgets Launchpad',
         summary: 'Monthly Financial Summaries',
-        investments: 'Multiple Portfolio Investments',
+        investments: 'Multiple Portfolio Investment',
         emi: 'Active EMIs & Loan Engine',
-        admin: 'Admin Category Control Panel'
+        admin: 'Admin User & Category Control Panel'
       };
       document.getElementById('page-title').textContent = titles[tabId];
       if (window.innerWidth <= 992) toggleSidebar();
@@ -1428,7 +1456,430 @@
       if (tabId === 'insights') renderInsightsCharts();
       if (tabId === 'widgets') renderSmartWidgets();
       if (tabId === 'summary') renderMonthlySummaries();
-      if (tabId === 'admin') renderAdminCategoryTable();
+      if (tabId === 'admin') {
+        renderAdminCategoryTable();
+        renderAdminUsersTable();
+      }
+    }
+
+    function setMode(type, mode) {
+      if (type === 'tx') {
+        txDisplayMode = mode;
+        document.getElementById('tx-btn-table').classList.toggle('active', mode === 'table');
+        document.getElementById('tx-btn-grid').classList.toggle('active', mode === 'grid');
+        renderTransactions();
+      } else if (type === 'inv') {
+        invDisplayMode = mode;
+        document.getElementById('inv-btn-table').classList.toggle('active', mode === 'table');
+        document.getElementById('inv-btn-grid').classList.toggle('active', mode === 'grid');
+        renderInvestments();
+      } else if (type === 'emi') {
+        emiDisplayMode = mode;
+        document.getElementById('emi-btn-table').classList.toggle('active', mode === 'table');
+        document.getElementById('emi-btn-grid').classList.toggle('active', mode === 'grid');
+        renderEMIs();
+      }
+    }
+
+    function getBadgeClass(type) {
+      switch(type) {
+        case 'Income': return 'badge-income';
+        case 'Expense': return 'badge-expense';
+        case 'Transfer': return 'badge-transfer';
+        case 'Savings': return 'badge-savings';
+        case 'Investment': return 'badge-investment';
+        default: return 'badge-income';
+      }
+    }
+
+    /* TRANSACTIONS RENDER */
+    function renderTransactions() {
+      const txs = getUserData('transactions');
+      const container = document.getElementById('tx-display-container');
+
+      if (!txs || txs.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No transactions logged yet.</p>';
+        return;
+      }
+
+      if (txDisplayMode === 'table') {
+        container.innerHTML = `
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Category</th>
+                  <th>Subcategory</th>
+                  <th>Account</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${txs.map(t => {
+                  const accDisplay = t.type === 'Transfer' ? `${sanitize(t.account)} <i class="fa-solid fa-arrow-right" style="font-size:0.75rem;"></i> ${sanitize(t.toAccount)}` : sanitize(t.account);
+                  return `
+                  <tr>
+                    <td>${sanitize(t.date)}</td>
+                    <td><span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span></td>
+                    <td>${sanitize(t.category)}</td>
+                    <td>${sanitize(t.subcategory)}</td>
+                    <td>${accDisplay}</td>
+                    <td style="font-weight:700; color:${t.type.includes('Income') ? 'var(--success)' : (t.type === 'Transfer' ? 'var(--primary)' : 'var(--danger)')}">
+                      ${t.type.includes('Income') ? '+' : (t.type === 'Transfer' ? '⇄ ' : '-')}${currentCurrency}${t.amount.toFixed(2)}
+                    </td>
+                    <td>
+                      <button onclick="editTransaction(${t.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
+                      <button onclick="deleteTransaction(${t.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div class="records-grid">
+            ${txs.map(t => {
+              const accDisplay = t.type === 'Transfer' ? `${sanitize(t.account)} -> ${sanitize(t.toAccount)}` : sanitize(t.account);
+              return `
+              <div class="grid-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted);">${sanitize(t.date)}</span>
+                </div>
+                <div style="font-weight:800; font-size:1.2rem; margin-bottom:4px; color:${t.type.includes('Income') ? 'var(--success)' : (t.type === 'Transfer' ? 'var(--primary)' : 'var(--danger)')}">
+                  ${t.type.includes('Income') ? '+' : (t.type === 'Transfer' ? '⇄ ' : '-')}${currentCurrency}${t.amount.toFixed(2)}
+                </div>
+                <div style="font-size:0.9rem; font-weight:700;">${sanitize(t.category)}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">${sanitize(t.subcategory)}</div>
+                <div style="font-size:0.85rem;"><i class="fa-solid fa-wallet"></i> ${accDisplay}</div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                  <button onclick="editTransaction(${t.id})" class="btn" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteTransaction(${t.id})" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>`;
+      }
+    }
+
+    /* INVESTMENTS RENDER & LOGIC */
+    function saveInvestment(e) {
+      e.preventDefault();
+      const editId = document.getElementById('inv-edit-id').value;
+      let investments = getUserData('investments');
+
+      const invData = {
+        id: editId ? parseInt(editId) : Date.now(),
+        date: document.getElementById('invDate').value,
+        name: document.getElementById('invName').value,
+        type: document.getElementById('invType').value,
+        amount: parseFloat(document.getElementById('invAmount').value),
+        rate: parseFloat(document.getElementById('invReturnRate').value)
+      };
+
+      if (editId) {
+        const idx = investments.findIndex(item => item.id === parseInt(editId));
+        if (idx !== -1) investments[idx] = invData;
+      } else {
+        investments.push(invData);
+      }
+
+      setUserData('investments', investments);
+      resetInvForm();
+      renderAll();
+    }
+
+    function editInvestment(id) {
+      const investments = getUserData('investments');
+      const item = investments.find(inv => inv.id === id);
+      if (!item) return;
+
+      document.getElementById('inv-edit-id').value = item.id;
+      document.getElementById('invDate').value = item.date;
+      document.getElementById('invName').value = item.name;
+      document.getElementById('invType').value = item.type;
+      document.getElementById('invAmount').value = item.amount;
+      document.getElementById('invReturnRate').value = item.rate;
+
+      document.getElementById('inv-form-title').textContent = 'Edit Investment Record';
+      document.getElementById('inv-cancel-btn').style.display = 'inline-flex';
+    }
+
+    function resetInvForm() {
+      document.getElementById('invForm').reset();
+      document.getElementById('inv-edit-id').value = '';
+      document.getElementById('inv-form-title').textContent = 'Add Portfolio Investment';
+      document.getElementById('inv-cancel-btn').style.display = 'none';
+      document.getElementById('invDate').valueAsDate = new Date();
+    }
+
+    function deleteInvestment(id) {
+      let investments = getUserData('investments');
+      investments = investments.filter(inv => inv.id !== id);
+      setUserData('investments', investments);
+      renderAll();
+    }
+
+    function renderInvestments() {
+      const investments = getUserData('investments');
+      const container = document.getElementById('inv-display-container');
+
+      if (!investments || investments.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No investments logged yet.</p>';
+        return;
+      }
+
+      if (invDisplayMode === 'table') {
+        container.innerHTML = `
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Asset Name</th><th>Category</th><th>Principal Amount</th><th>Exp. Return</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                ${investments.map(inv => `
+                  <tr>
+                    <td>${sanitize(inv.date)}</td>
+                    <td><strong>${sanitize(inv.name)}</strong></td>
+                    <td><span class="badge badge-investment">${sanitize(inv.type)}</span></td>
+                    <td>${currentCurrency}${inv.amount.toFixed(2)}</td>
+                    <td style="color:var(--success); font-weight:700;">${inv.rate}% p.a</td>
+                    <td>
+                      <button onclick="editInvestment(${inv.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
+                      <button onclick="deleteInvestment(${inv.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div class="records-grid">
+            ${investments.map(inv => `
+              <div class="grid-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span class="badge badge-investment">${sanitize(inv.type)}</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted);">${sanitize(inv.date)}</span>
+                </div>
+                <div style="font-weight:800; font-size:1.1rem; margin-bottom:4px;">${sanitize(inv.name)}</div>
+                <div style="font-size:1.3rem; font-weight:800; color:var(--warning); margin-bottom:6px;">${currentCurrency}${inv.amount.toFixed(2)}</div>
+                <div style="font-size:0.85rem; color:var(--success); font-weight:700;">Rate: ${inv.rate}% p.a</div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                  <button onclick="editInvestment(${inv.id})" class="btn" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteInvestment(${inv.id})" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>`).join('')}
+          </div>`;
+      }
+    }
+
+    /* EMI RENDER & LOGIC */
+    function saveEMI(e) {
+      e.preventDefault();
+      const editId = document.getElementById('emi-edit-id').value;
+      let emis = getUserData('emis');
+
+      const P = parseFloat(document.getElementById('emiPrincipal').value);
+      const annualRate = parseFloat(document.getElementById('emiRate').value);
+      const N = parseInt(document.getElementById('emiTenure').value);
+
+      const R = (annualRate / 12) / 100;
+      let monthlyEmi = 0;
+      if (R > 0) {
+        monthlyEmi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+      } else {
+        monthlyEmi = P / N;
+      }
+
+      const emiData = {
+        id: editId ? parseInt(editId) : Date.now(),
+        title: document.getElementById('emiTitle').value,
+        principal: P,
+        rate: annualRate,
+        tenure: N,
+        startDate: document.getElementById('emiStartDate').value,
+        monthlyEmi: monthlyEmi
+      };
+
+      if (editId) {
+        const idx = emis.findIndex(item => item.id === parseInt(editId));
+        if (idx !== -1) emis[idx] = emiData;
+      } else {
+        emis.push(emiData);
+      }
+
+      setUserData('emis', emis);
+      resetEMIForm();
+      renderAll();
+    }
+
+    function editEMI(id) {
+      const emis = getUserData('emis');
+      const item = emis.find(e => e.id === id);
+      if (!item) return;
+
+      document.getElementById('emi-edit-id').value = item.id;
+      document.getElementById('emiTitle').value = item.title;
+      document.getElementById('emiPrincipal').value = item.principal;
+      document.getElementById('emiRate').value = item.rate;
+      document.getElementById('emiTenure').value = item.tenure;
+      document.getElementById('emiStartDate').value = item.startDate;
+
+      document.getElementById('emi-form-title').textContent = 'Edit EMI Record';
+      document.getElementById('emi-cancel-btn').style.display = 'inline-flex';
+    }
+
+    function resetEMIForm() {
+      document.getElementById('emiForm').reset();
+      document.getElementById('emi-edit-id').value = '';
+      document.getElementById('emi-form-title').textContent = 'Add Active Loan / EMI';
+      document.getElementById('emi-cancel-btn').style.display = 'none';
+      document.getElementById('emiStartDate').valueAsDate = new Date();
+    }
+
+    function deleteEMI(id) {
+      let emis = getUserData('emis');
+      emis = emis.filter(e => e.id !== id);
+      setUserData('emis', emis);
+      renderAll();
+    }
+
+    function renderEMIs() {
+      const emis = getUserData('emis');
+      const container = document.getElementById('emi-display-container');
+
+      if (!emis || emis.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No active EMIs logged yet.</p>';
+        return;
+      }
+
+      if (emiDisplayMode === 'table') {
+        container.innerHTML = `
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Loan Title</th><th>Principal</th><th>Rate</th><th>Tenure</th><th>Start Date</th><th>Monthly EMI</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                ${emis.map(e => `
+                  <tr>
+                    <td><strong>${sanitize(e.title)}</strong></td>
+                    <td>${currentCurrency}${e.principal.toFixed(2)}</td>
+                    <td>${e.rate}%</td>
+                    <td>${e.tenure} Months</td>
+                    <td>${sanitize(e.startDate)}</td>
+                    <td style="color:#a855f7; font-weight:800;">${currentCurrency}${e.monthlyEmi.toFixed(2)}</td>
+                    <td>
+                      <button onclick="editEMI(${e.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
+                      <button onclick="deleteEMI(${e.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      } else {
+        container.innerHTML = `
+          <div class="records-grid">
+            ${emis.map(e => `
+              <div class="grid-card">
+                <div style="font-weight:800; font-size:1.1rem; margin-bottom:6px;">${sanitize(e.title)}</div>
+                <div style="font-size:0.85rem; color:var(--text-muted);">Principal: ${currentCurrency}${e.principal.toFixed(2)} @ ${e.rate}%</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#a855f7; margin:8px 0;">${currentCurrency}${e.monthlyEmi.toFixed(2)} / mo</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Tenure: ${e.tenure} months | Starts: ${sanitize(e.startDate)}</div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                  <button onclick="editEMI(${e.id})" class="btn" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteEMI(${e.id})" class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>`).join('')}
+          </div>`;
+      }
+    }
+
+    /* ADMIN PANEL LOGIC */
+    function renderAdminUsersTable() {
+      const users = JSON.parse(localStorage.getItem('srv_users')) || [];
+      const tbody = document.getElementById('admin-users-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = users.map(u => {
+        const userTxs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_transactions`)) || [];
+        const userInvs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_investments`)) || [];
+        const userEmis = JSON.parse(localStorage.getItem(`srv_data_${u.id}_emis`)) || [];
+
+        return `
+        <tr>
+          <td><strong>${sanitize(u.name)}</strong></td>
+          <td>${sanitize(u.username || u.email)}</td>
+          <td>${sanitize(u.phone || 'N/A')}</td>
+          <td><span class="badge ${u.role === 'admin' ? 'badge-expense' : 'badge-income'}">${sanitize(u.role)}</span></td>
+          <td>${userTxs.length} entries</td>
+          <td>${userInvs.length} entries</td>
+          <td>${userEmis.length} entries</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function addAdminCategory(e) {
+      e.preventDefault();
+      const type = document.getElementById('admin-cat-type').value;
+      const catName = document.getElementById('admin-cat-name').value.trim();
+      const subcatsRaw = document.getElementById('admin-subcat-list').value;
+
+      if (!catName || !subcatsRaw) return;
+
+      const subcatList = subcatsRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      let categories = getMasterCategories();
+
+      if (!categories[type]) categories[type] = {};
+      categories[type][catName] = subcatList;
+
+      localStorage.setItem('srv_categories', JSON.stringify(categories));
+      
+      document.getElementById('admin-cat-name').value = '';
+      document.getElementById('admin-subcat-list').value = '';
+
+      handleTypeChange();
+      initDashboardFilterDropdowns();
+      renderAdminCategoryTable();
+    }
+
+    function deleteAdminCategory(type, catName) {
+      let categories = getMasterCategories();
+      if (categories[type] && categories[type][catName]) {
+        delete categories[type][catName];
+        localStorage.setItem('srv_categories', JSON.stringify(categories));
+        handleTypeChange();
+        initDashboardFilterDropdowns();
+        renderAdminCategoryTable();
+      }
+    }
+
+    function renderAdminCategoryTable() {
+      const categories = getMasterCategories();
+      const tbody = document.getElementById('admin-cat-table-body');
+      if (!tbody) return;
+
+      let html = '';
+      Object.keys(categories).forEach(type => {
+        Object.keys(categories[type] || {}).forEach(cat => {
+          const subs = categories[type][cat].join(', ');
+          html += `
+            <tr>
+              <td><span class="badge ${getBadgeClass(type)}">${sanitize(type)}</span></td>
+              <td><strong>${sanitize(cat)}</strong></td>
+              <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(subs)}</td>
+              <td>
+                <button onclick="deleteAdminCategory('${type}', '${cat}')" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>`;
+        });
+      });
+
+      tbody.innerHTML = html || '<tr><td colspan="4">No custom categories found.</td></tr>';
     }
 
     /* EXPORT FUNCTIONALITY FOR TRANSACTIONS */
@@ -1453,7 +1904,7 @@
         return;
       }
 
-      let csv = 'Date,Type,Main Category,Sub Category,Account / Route,Amount (' + currentCurrency + ')\n';
+      let csv = 'Date,Type,Main Category,Subcategory,Account / Route,Amount (' + currentCurrency + ')\n';
       txs.forEach(t => {
         const amt = t.type.includes('Income') ? t.amount : (t.type === 'Transfer' ? t.amount : -t.amount);
         const accInfo = t.type === 'Transfer' ? `${t.account} -> ${t.toAccount}` : t.account;
@@ -1484,7 +1935,7 @@
             <th>Date</th>
             <th>Type</th>
             <th>Main Category</th>
-            <th>Sub Category</th>
+            <th>Subcategory</th>
             <th>Account / Route</th>
             <th>Amount (${currentCurrency})</th>
           </tr>
@@ -1727,7 +2178,7 @@
     /* DASHBOARD FILTER LOGIC */
     function initDashboardFilterDropdowns() {
       const catSelect = document.getElementById('dash-filter-category');
-      catSelect.innerHTML = '<option value="all">All Categories</option>';
+      catSelect.innerHTML = '<option value="all">All Category</option>';
 
       const master = getMasterCategories();
       const addedCats = new Set();
@@ -1749,7 +2200,7 @@
     function populateDashSubcategoryFilter() {
       const cat = document.getElementById('dash-filter-category').value;
       const subSelect = document.getElementById('dash-filter-subcategory');
-      subSelect.innerHTML = '<option value="all">All Sub Categories</option>';
+      subSelect.innerHTML = '<option value="all">All Subcategory</option>';
 
       if (cat === 'all') {
         applyDashboardFilters();
@@ -2160,7 +2611,7 @@
         <div class="table-responsive">
           <table>
             <thead>
-              <tr><th>Type</th><th>Category</th><th>Sub Category</th><th>Account / Route</th><th>Amount</th></tr>
+              <tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Account / Route</th><th>Amount</th></tr>
             </thead>
             <tbody>
               ${txs.map(t => {
@@ -2327,435 +2778,17 @@
             <div>
               <h4 style="font-size: 1.1rem; font-weight:800; margin-bottom:8px;">${m.monthName}</h4>
               <div style="font-size:0.9rem; margin-bottom:4px;">Income: <span style="color:var(--success); font-weight:700;">${currentCurrency}${m.income.toFixed(2)}</span></div>
-              <div style="font-size:0.9rem; margin-bottom:4px;">Expenses: <span style="color:var(--danger); font-weight:700;">-${currentCurrency}${m.expense.toFixed(2)}</span></div>
+              <div style="font-size:0.9rem; margin-bottom:4px;">Expense: <span style="color:var(--danger); font-weight:700;">-${currentCurrency}${m.expense.toFixed(2)}</span></div>
               <div style="font-size:0.95rem; font-weight:800;">Net Balance: <span style="color:${total >= 0 ? 'var(--success)' : 'var(--danger)'}">${currentCurrency}${total.toFixed(2)}</span></div>
             </div>
             <div class="summary-ring">
               <svg viewBox="0 0 36 36" style="width:100%; height:100%;">
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3.8"/>
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" stroke-width="3.8" stroke-dasharray="${Math.min(100, (m.income / (m.income + m.expense || 1)) * 100)}, 100"/>
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3" />
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--primary)" stroke-dasharray="${m.income ? Math.min(100, Math.round((m.expense / m.income) * 100)) : 0}, 100" stroke-width="3" />
               </svg>
             </div>
           </div>`;
       }).join('');
-    }
-
-    function saveInvestment(e) {
-      e.preventDefault();
-      const editId = document.getElementById('inv-edit-id').value;
-      let investments = getUserData('investments');
-
-      const invData = {
-        id: editId ? parseInt(editId) : Date.now(),
-        date: document.getElementById('invDate').value,
-        name: document.getElementById('invName').value,
-        type: document.getElementById('invType').value,
-        amount: parseFloat(document.getElementById('invAmount').value),
-        rate: parseFloat(document.getElementById('invReturnRate').value) || 0
-      };
-
-      if (editId) {
-        const idx = investments.findIndex(i => i.id === parseInt(editId));
-        if (idx !== -1) investments[idx] = invData;
-      } else {
-        investments.unshift(invData);
-      }
-
-      setUserData('investments', investments);
-      resetInvForm();
-      renderAll();
-    }
-
-    function editInvestment(id) {
-      const investments = getUserData('investments');
-      const inv = investments.find(i => i.id === id);
-      if (!inv) return;
-
-      document.getElementById('inv-edit-id').value = inv.id;
-      document.getElementById('invDate').value = inv.date;
-      document.getElementById('invName').value = inv.name;
-      document.getElementById('invType').value = inv.type;
-      document.getElementById('invAmount').value = inv.amount;
-      document.getElementById('invReturnRate').value = inv.rate;
-
-      document.getElementById('inv-form-title').textContent = 'Edit Portfolio Investment';
-      document.getElementById('inv-cancel-btn').style.display = 'inline-flex';
-    }
-
-    function resetInvForm() {
-      document.getElementById('invForm').reset();
-      document.getElementById('inv-edit-id').value = '';
-      document.getElementById('inv-form-title').textContent = 'Add Portfolio Investment';
-      document.getElementById('inv-cancel-btn').style.display = 'none';
-      document.getElementById('invDate').valueAsDate = new Date();
-    }
-
-    function deleteInvestment(id) {
-      let investments = getUserData('investments');
-      investments = investments.filter(i => i.id !== id);
-      setUserData('investments', investments);
-      renderAll();
-    }
-
-    /* EMI & LOANS FUNCTIONS */
-    function saveEMI(e) {
-      e.preventDefault();
-      const editId = document.getElementById('emi-edit-id').value;
-      let emis = getUserData('emis');
-
-      const p = parseFloat(document.getElementById('emiPrincipal').value) || 0;
-      const rAnnual = parseFloat(document.getElementById('emiRate').value) || 0;
-      const n = parseInt(document.getElementById('emiTenure').value) || 1;
-
-      const r = rAnnual / 12 / 100;
-      let emiVal = 0;
-      if (r > 0) {
-        emiVal = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-      } else {
-        emiVal = p / n;
-      }
-
-      const emiData = {
-        id: editId ? parseInt(editId) : Date.now(),
-        title: document.getElementById('emiTitle').value,
-        principal: p,
-        rate: rAnnual,
-        tenure: n,
-        startDate: document.getElementById('emiStartDate').value,
-        monthlyEmi: emiVal
-      };
-
-      if (editId) {
-        const idx = emis.findIndex(item => item.id === parseInt(editId));
-        if (idx !== -1) emis[idx] = emiData;
-      } else {
-        emis.unshift(emiData);
-      }
-
-      setUserData('emis', emis);
-      resetEMIForm();
-      renderAll();
-    }
-
-    function editEMI(id) {
-      const emis = getUserData('emis');
-      const item = emis.find(e => e.id === id);
-      if (!item) return;
-
-      document.getElementById('emi-edit-id').value = item.id;
-      document.getElementById('emiTitle').value = item.title;
-      document.getElementById('emiPrincipal').value = item.principal;
-      document.getElementById('emiRate').value = item.rate;
-      document.getElementById('emiTenure').value = item.tenure;
-      document.getElementById('emiStartDate').value = item.startDate;
-
-      document.getElementById('emi-form-title').textContent = 'Edit Loan / EMI';
-      document.getElementById('emi-cancel-btn').style.display = 'inline-flex';
-    }
-
-    function resetEMIForm() {
-      document.getElementById('emiForm').reset();
-      document.getElementById('emi-edit-id').value = '';
-      document.getElementById('emi-form-title').textContent = 'Add Active Loan / EMI';
-      document.getElementById('emi-cancel-btn').style.display = 'none';
-      document.getElementById('emiStartDate').valueAsDate = new Date();
-    }
-
-    function deleteEMI(id) {
-      let emis = getUserData('emis');
-      emis = emis.filter(e => e.id !== id);
-      setUserData('emis', emis);
-      renderAll();
-    }
-
-    /* ADMIN CATEGORY FUNCTIONS */
-    function addAdminCategory(e) {
-      e.preventDefault();
-      const type = document.getElementById('admin-cat-type').value;
-      const name = document.getElementById('admin-cat-name').value.trim();
-      const subStr = document.getElementById('admin-subcat-list').value;
-
-      if (!name || !subStr) return;
-      const subArr = subStr.split(',').map(s => s.trim()).filter(Boolean);
-
-      let master = getMasterCategories();
-      if (!master[type]) master[type] = {};
-      master[type][name] = subArr;
-
-      localStorage.setItem('srv_categories', JSON.stringify(master));
-      document.getElementById('admin-cat-name').value = '';
-      document.getElementById('admin-subcat-list').value = '';
-      renderAdminCategoryTable();
-      handleTypeChange();
-      initDashboardFilterDropdowns();
-    }
-
-    function deleteAdminCategory(type, catName) {
-      let master = getMasterCategories();
-      if (master[type] && master[type][catName]) {
-        delete master[type][catName];
-        localStorage.setItem('srv_categories', JSON.stringify(master));
-        renderAdminCategoryTable();
-        handleTypeChange();
-        initDashboardFilterDropdowns();
-      }
-    }
-
-    function renderAdminCategoryTable() {
-      const master = getMasterCategories();
-      const tbody = document.getElementById('admin-cat-table-body');
-      let html = '';
-
-      Object.keys(master).forEach(type => {
-        Object.keys(master[type] || {}).forEach(cat => {
-          const subs = master[type][cat].join(', ');
-          html += `
-            <tr>
-              <td><span class="badge ${getBadgeClass(type)}">${type}</span></td>
-              <td><strong>${sanitize(cat)}</strong></td>
-              <td style="color:var(--text-muted); font-size:0.85rem;">${sanitize(subs)}</td>
-              <td>
-                <button onclick="deleteAdminCategory('${type}', '${cat}')" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-              </td>
-            </tr>`;
-        });
-      });
-
-      tbody.innerHTML = html || '<tr><td colspan="4">No custom categories found.</td></tr>';
-    }
-
-    /* DISPLAY RENDERING ENGINES */
-    function setMode(section, mode) {
-      if (section === 'tx') {
-        txDisplayMode = mode;
-        document.getElementById('tx-btn-table').classList.toggle('active', mode === 'table');
-        document.getElementById('tx-btn-grid').classList.toggle('active', mode === 'grid');
-        renderTransactions();
-      } else if (section === 'inv') {
-        invDisplayMode = mode;
-        document.getElementById('inv-btn-table').classList.toggle('active', mode === 'table');
-        document.getElementById('inv-btn-grid').classList.toggle('active', mode === 'grid');
-        renderInvestments();
-      } else if (section === 'emi') {
-        emiDisplayMode = mode;
-        document.getElementById('emi-btn-table').classList.toggle('active', mode === 'table');
-        document.getElementById('emi-btn-grid').classList.toggle('active', mode === 'grid');
-        renderEMIs();
-      }
-    }
-
-    function getBadgeClass(type) {
-      if (type.includes('Income')) return 'badge-income';
-      if (type === 'Transfer') return 'badge-transfer';
-      if (type.includes('Savings')) return 'badge-savings';
-      if (type.includes('Investment')) return 'badge-investment';
-      return 'badge-expense';
-    }
-
-    function renderTransactions() {
-      const txs = getUserData('transactions');
-      const container = document.getElementById('tx-display-container');
-
-      if (!txs || txs.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No transaction entries logged yet.</p>';
-        return;
-      }
-
-      if (txDisplayMode === 'table') {
-        container.innerHTML = `
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Sub Category</th>
-                  <th>Account / Route</th>
-                  <th>Amount</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${txs.map(t => {
-                  const accDisplay = t.type === 'Transfer' ? `${sanitize(t.account)} <i class="fa-solid fa-arrow-right" style="font-size:0.75rem;"></i> ${sanitize(t.toAccount)}` : sanitize(t.account);
-                  return `
-                  <tr>
-                    <td>${sanitize(t.date)}</td>
-                    <td><span class="badge ${getBadgeClass(t.type)}">${t.type}</span></td>
-                    <td>${sanitize(t.category)}</td>
-                    <td>${sanitize(t.subcategory)}</td>
-                    <td>${accDisplay}</td>
-                    <td style="font-weight:700; color:${t.type.includes('Income') ? 'var(--success)' : (t.type === 'Transfer' ? 'var(--primary)' : 'var(--danger)')}">
-                      ${t.type.includes('Income') ? '+' : (t.type === 'Transfer' ? '⇄ ' : '-')}${currentCurrency}${t.amount.toFixed(2)}
-                    </td>
-                    <td>
-                      <button onclick="editTransaction(${t.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
-                      <button onclick="deleteTransaction(${t.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                  </tr>`;
-                }).join('')}
-              </tbody>
-            </table>
-          </div>`;
-      } else {
-        container.innerHTML = `
-          <div class="records-grid">
-            ${txs.map(t => {
-              const accDisplay = t.type === 'Transfer' ? `${sanitize(t.account)} ➔ ${sanitize(t.toAccount)}` : sanitize(t.account);
-              return `
-              <div class="grid-card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                  <span class="badge ${getBadgeClass(t.type)}">${t.type}</span>
-                  <span style="font-size:0.8rem; color:var(--text-muted);">${sanitize(t.date)}</span>
-                </div>
-                <div style="font-size:1.2rem; font-weight:800; color:${t.type.includes('Income') ? 'var(--success)' : (t.type === 'Transfer' ? 'var(--primary)' : 'var(--danger)')}">
-                  ${t.type.includes('Income') ? '+' : (t.type === 'Transfer' ? '⇄ ' : '-')}${currentCurrency}${t.amount.toFixed(2)}
-                </div>
-                <div style="font-weight:700; margin-top:6px;">${sanitize(t.category)}</div>
-                <div style="font-size:0.85rem; color:var(--text-muted);">${sanitize(t.subcategory)}</div>
-                <div style="font-size:0.8rem; color:var(--primary); margin-top:6px;"><i class="fa-solid fa-wallet"></i> ${accDisplay}</div>
-                <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
-                  <button onclick="editTransaction(${t.id})" style="background:none; border:none; color:var(--primary); cursor:pointer;"><i class="fa-solid fa-pen"></i></button>
-                  <button onclick="deleteTransaction(${t.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                </div>
-              </div>`;
-            }).join('')}
-          </div>`;
-      }
-    }
-
-    function renderInvestments() {
-      const investments = getUserData('investments');
-      const container = document.getElementById('inv-display-container');
-
-      if (!investments || investments.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No investments saved.</p>';
-        return;
-      }
-
-      if (invDisplayMode === 'table') {
-        container.innerHTML = `
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Asset Name</th>
-                  <th>Category</th>
-                  <th>Amount Invested</th>
-                  <th>Est. Return Rate</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${investments.map(inv => `
-                  <tr>
-                    <td>${sanitize(inv.date)}</td>
-                    <td><strong>${sanitize(inv.name)}</strong></td>
-                    <td><span class="badge badge-investment">${sanitize(inv.type)}</span></td>
-                    <td style="font-weight:700; color:var(--warning);">${currentCurrency}${inv.amount.toFixed(2)}</td>
-                    <td>${inv.rate}% p.a</td>
-                    <td>
-                      <button onclick="editInvestment(${inv.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
-                      <button onclick="deleteInvestment(${inv.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                  </tr>`).join('')}
-              </tbody>
-            </table>
-          </div>`;
-      } else {
-        container.innerHTML = `
-          <div class="records-grid">
-            ${investments.map(inv => `
-              <div class="grid-card">
-                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">${sanitize(inv.date)}</div>
-                <div style="font-weight:800; font-size:1.1rem; margin-bottom:4px;">${sanitize(inv.name)}</div>
-                <span class="badge badge-investment">${sanitize(inv.type)}</span>
-                <div style="font-size:1.3rem; font-weight:800; color:var(--warning); margin-top:10px;">
-                  ${currentCurrency}${inv.amount.toFixed(2)}
-                </div>
-                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Return Rate: ${inv.rate}% p.a</div>
-                <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
-                  <button onclick="editInvestment(${inv.id})" style="background:none; border:none; color:var(--primary); cursor:pointer;"><i class="fa-solid fa-pen"></i></button>
-                  <button onclick="deleteInvestment(${inv.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                </div>
-              </div>`).join('')}
-          </div>`;
-      }
-    }
-
-    function renderEMIs() {
-      const emis = getUserData('emis');
-      const container = document.getElementById('emi-display-container');
-
-      if (!emis || emis.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No active loans or EMIs recorded.</p>';
-        return;
-      }
-
-      if (emiDisplayMode === 'table') {
-        container.innerHTML = `
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Loan Name</th>
-                  <th>Principal</th>
-                  <th>Interest Rate</th>
-                  <th>Tenure</th>
-                  <th>Monthly EMI</th>
-                  <th>Start Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${emis.map(e => `
-                  <tr>
-                    <td><strong>${sanitize(e.title)}</strong></td>
-                    <td>${currentCurrency}${e.principal.toFixed(2)}</td>
-                    <td>${e.rate}%</td>
-                    <td>${e.tenure} Months</td>
-                    <td style="font-weight:700; color:#a855f7;">${currentCurrency}${e.monthlyEmi.toFixed(2)}</td>
-                    <td>${sanitize(e.startDate)}</td>
-                    <td>
-                      <button onclick="editEMI(${e.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
-                      <button onclick="deleteEMI(${e.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                  </tr>`).join('')}
-              </tbody>
-            </table>
-          </div>`;
-      } else {
-        container.innerHTML = `
-          <div class="records-grid">
-            ${emis.map(e => `
-              <div class="grid-card">
-                <div style="font-weight:800; font-size:1.1rem; margin-bottom:4px;">${sanitize(e.title)}</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">Start: ${sanitize(e.startDate)}</div>
-                <div style="font-size:1.3rem; font-weight:800; color:#a855f7; margin-top:10px;">
-                  ${currentCurrency}${e.monthlyEmi.toFixed(2)} / mo
-                </div>
-                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:6px;">Principal: ${currentCurrency}${e.principal.toFixed(2)}</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">Rate: ${e.rate}% | Tenure: ${e.tenure} m</div>
-                <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
-                  <button onclick="editEMI(${e.id})" style="background:none; border:none; color:var(--primary); cursor:pointer;"><i class="fa-solid fa-pen"></i></button>
-                  <button onclick="deleteEMI(${e.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                </div>
-              </div>`).join('')}
-          </div>`;
-      }
-    }
-
-    function renderAll() {
-      if (!currentUser) return;
-      renderGoalsWidget();
-      updateDashboardCards();
-      renderCharts();
-      renderGoalsAndEssentialsTables();
-      renderTransactions();
-      renderInvestments();
-      renderEMIs();
     }
   </script>
 </body>

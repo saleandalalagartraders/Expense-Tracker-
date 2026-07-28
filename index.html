@@ -222,12 +222,18 @@
       border-radius: 14px; padding: 18px; position: relative;
     }
 
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
     .badge-income { background: rgba(16, 185, 129, 0.15); color: var(--success); }
     .badge-expense { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
     .badge-transfer { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
     .badge-savings { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
     .badge-investment { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .badge-online { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-offline { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot-green { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+    .dot-gray { background-color: var(--text-muted); }
 
     .view-page { display: none; }
     .view-page.active { display: block; }
@@ -363,7 +369,7 @@
       <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group" style="margin-bottom: 14px;">
           <label>Username / Email</label>
-          <input type="text" id="login-identifier" required placeholder="admin or email@domain.com">
+          <input type="text" id="login-identifier" required placeholder="admin or user@example.com">
         </div>
         <div class="form-group" style="margin-bottom: 12px;">
           <label>Password</label>
@@ -1100,13 +1106,13 @@
         <div class="guide-step">
           <div class="guide-num">10</div>
           <div class="guide-body">
-            <h4><i class="fa-solid fa-user-shield" style="color:var(--primary);"></i> User & Category Control (Admin Only)</h4>
+            <h4><i class="fa-solid fa-user-shield" style="color:var(--primary);"></i> User Tracking & Admin Control Panel</h4>
             <p>
-              <strong>Purpose:</strong> System administration, account customization, and category management.<br>
+              <strong>Purpose:</strong> Track active users, view login timestamps, and manage master categories.<br>
               <strong>How to Use:</strong>
-              <br>• View all registered users and their transaction summary counts.
-              <br>• Add/remove accounts and banks (e.g., SBI, HDFC, Cash, Wallet).
-              <br>• Create custom Categories and Subcategories for all transaction types.
+              <br>• Track online status, last login timestamps, and transaction counts of registered users.
+              <br>• Review user login audit logs.
+              <br>• Add or delete banks, accounts, categories, and subcategories.
             </p>
           </div>
         </div>
@@ -1117,13 +1123,51 @@
     <!-- ADMIN PANEL -->
     <div id="page-admin" class="view-page">
       <div class="card_3d" style="margin-bottom: 24px;">
-        <h3 style="margin-bottom: 16px; font-size: 1.1rem;">User Details & Activity Directory</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h3 style="font-size: 1.1rem;"><i class="fa-solid fa-users-viewfinder" style="color:var(--primary);"></i> Registered User Tracking & Activity Directory</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Track real-time login statuses, timestamps, and user activity stats.</p>
+          </div>
+          <button class="btn" onclick="renderAdminUsersTable()" style="padding: 8px 14px; font-size:0.85rem;">
+            <i class="fa-solid fa-rotate"></i> Refresh Status
+          </button>
+        </div>
         <div class="table-responsive">
           <table>
             <thead>
-              <tr><th>Name</th><th>Username / Email</th><th>Phone</th><th>Role</th><th>Total Transactions</th><th>Total Investments</th><th>Total EMIs</th></tr>
+              <tr>
+                <th>Status</th>
+                <th>Name</th>
+                <th>Username / Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Logins</th>
+                <th>Last Login Time</th>
+                <th>Txs</th>
+                <th>Investments</th>
+                <th>EMIs</th>
+              </tr>
             </thead>
             <tbody id="admin-users-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- LIVE LOGIN ACTIVITY LOG TABLE -->
+      <div class="card_3d" style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 16px; font-size: 1.1rem;"><i class="fa-solid fa-clock-rotate-left" style="color:var(--warning);"></i> Login Audit & Session Trail</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Login Timestamp</th>
+                <th>User Name</th>
+                <th>Email / Username</th>
+                <th>User Role</th>
+                <th>Session State</th>
+              </tr>
+            </thead>
+            <tbody id="admin-login-logs-table-body"></tbody>
           </table>
         </div>
       </div>
@@ -1193,7 +1237,6 @@
       });
     }
 
-    /* Helper function to strip any category prefixes (e.g., 'Income-', 'Expense-', '- ') from subcategory strings */
     function stripCategoryPrefix(str) {
       if (typeof str !== 'string') return str;
       return str.replace(/^(Income|Expense|Transfer|Savings|Investment)\s*[-:]\s*/i, '').replace(/^[-:\s]+/, '').trim();
@@ -1364,7 +1407,10 @@
           email: 'admin@srirenga.com',
           phone: '+91 0000000000',
           password: 'admin',
-          role: 'admin'
+          role: 'admin',
+          loginCount: 0,
+          lastLogin: 'N/A',
+          isOnline: false
         });
         localStorage.setItem('srv_users', JSON.stringify(users));
       }
@@ -1497,13 +1543,30 @@
       const password = document.getElementById('login-password').value;
 
       let users = JSON.parse(localStorage.getItem('srv_users')) || [];
-      const user = users.find(u => (u.username === identifier || u.email === identifier) && u.password === password);
+      const userIdx = users.findIndex(u => (u.username === identifier || u.email === identifier) && u.password === password);
 
-      if (!user) {
+      if (userIdx === -1) {
         alert('Invalid Username/Email or Password.');
         return;
       }
-      setCurrentSession(user);
+
+      const nowFormatted = new Date().toLocaleString();
+      users[userIdx].lastLogin = nowFormatted;
+      users[userIdx].loginCount = (users[userIdx].loginCount || 0) + 1;
+      users[userIdx].isOnline = true;
+      localStorage.setItem('srv_users', JSON.stringify(users));
+
+      let logs = JSON.parse(localStorage.getItem('srv_login_logs')) || [];
+      logs.unshift({
+        timestamp: nowFormatted,
+        userName: users[userIdx].name,
+        email: users[userIdx].email || users[userIdx].username,
+        role: users[userIdx].role,
+        status: 'Active Login'
+      });
+      localStorage.setItem('srv_login_logs', JSON.stringify(logs.slice(0, 50)));
+
+      setCurrentSession(users[userIdx]);
     }
 
     function handleRegister(e) {
@@ -1519,9 +1582,32 @@
         return;
       }
 
-      const newUser = { id: Date.now(), name, phone, email, username: email, password, role: 'user' };
+      const nowFormatted = new Date().toLocaleString();
+      const newUser = {
+        id: Date.now(),
+        name,
+        phone,
+        email,
+        username: email,
+        password,
+        role: 'user',
+        loginCount: 1,
+        lastLogin: nowFormatted,
+        isOnline: true
+      };
       users.push(newUser);
       localStorage.setItem('srv_users', JSON.stringify(users));
+
+      let logs = JSON.parse(localStorage.getItem('srv_login_logs')) || [];
+      logs.unshift({
+        timestamp: nowFormatted,
+        userName: newUser.name,
+        email: newUser.email,
+        role: 'user',
+        status: 'Registered & Logged In'
+      });
+      localStorage.setItem('srv_login_logs', JSON.stringify(logs.slice(0, 50)));
+
       setCurrentSession(newUser);
     }
 
@@ -1574,6 +1660,15 @@
     }
 
     function handleLogout() {
+      if (currentUser) {
+        let users = JSON.parse(localStorage.getItem('srv_users')) || [];
+        const uIdx = users.findIndex(u => u.id === currentUser.id);
+        if (uIdx !== -1) {
+          users[uIdx].isOnline = false;
+          localStorage.setItem('srv_users', JSON.stringify(users));
+        }
+      }
+
       localStorage.removeItem('srv_active_session');
       currentUser = null;
       document.getElementById('auth-screen').style.display = 'flex';
@@ -1639,7 +1734,7 @@
         investments: 'Multiple Portfolio Investment',
         emi: 'Active EMIs & Loan Engine',
         howtouse: 'How to Use Sri Renga Vilas Finance',
-        admin: 'Admin User & Category Control Panel'
+        admin: 'Admin User Tracking & Category Control Panel'
       };
       document.getElementById('page-title').textContent = titles[tabId];
       if (window.innerWidth <= 992) toggleSidebar();
@@ -2309,23 +2404,22 @@
       }
     }
 
-    /* DASHBOARD FILTERS & CARDS LOGIC */
+    /* DASHBOARD FILTERS & CARDS UPDATE */
     function initDashboardFilterDropdowns() {
       const catSelect = document.getElementById('dash-filter-category');
       if (!catSelect) return;
-
       catSelect.innerHTML = '<option value="all">All Category</option>';
-      const categories = getMasterCategories();
 
-      const allCatNames = new Set();
+      const categories = getMasterCategories();
+      const catSet = new Set();
       Object.keys(categories).forEach(type => {
-        Object.keys(categories[type]).forEach(cat => allCatNames.add(cat));
+        Object.keys(categories[type] || {}).forEach(c => catSet.add(c));
       });
 
-      allCatNames.forEach(cat => {
+      catSet.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
+        opt.value = c;
+        opt.textContent = c;
         catSelect.appendChild(opt);
       });
 
@@ -2338,21 +2432,23 @@
       if (!subSelect) return;
 
       subSelect.innerHTML = '<option value="all">All Subcategory</option>';
-      const categories = getMasterCategories();
+      if (selectedCat === 'all') {
+        applyDashboardFilters();
+        return;
+      }
 
+      const categories = getMasterCategories();
       const subSet = new Set();
       Object.keys(categories).forEach(type => {
-        Object.keys(categories[type]).forEach(cat => {
-          if (selectedCat === 'all' || cat === selectedCat) {
-            categories[type][cat].forEach(sub => subSet.add(stripCategoryPrefix(sub)));
-          }
-        });
+        if (categories[type][selectedCat]) {
+          categories[type][selectedCat].forEach(s => subSet.add(stripCategoryPrefix(s)));
+        }
       });
 
-      subSet.forEach(sub => {
+      subSet.forEach(s => {
         const opt = document.createElement('option');
-        opt.value = sub;
-        opt.textContent = sub;
+        opt.value = s;
+        opt.textContent = s;
         subSelect.appendChild(opt);
       });
 
@@ -2361,15 +2457,15 @@
 
     function handlePeriodFilterChange() {
       const period = document.getElementById('dash-filter-period').value;
-      const customStart = document.getElementById('dash-custom-start-group');
-      const customEnd = document.getElementById('dash-custom-end-group');
+      const startGrp = document.getElementById('dash-custom-start-group');
+      const endGrp = document.getElementById('dash-custom-end-group');
 
       if (period === 'custom') {
-        customStart.style.display = 'flex';
-        customEnd.style.display = 'flex';
+        startGrp.style.display = 'flex';
+        endGrp.style.display = 'flex';
       } else {
-        customStart.style.display = 'none';
-        customEnd.style.display = 'none';
+        startGrp.style.display = 'none';
+        endGrp.style.display = 'none';
       }
       applyDashboardFilters();
     }
@@ -2377,8 +2473,6 @@
     function resetDashboardFilters() {
       document.getElementById('dash-filter-period').value = 'all';
       document.getElementById('dash-filter-category').value = 'all';
-      document.getElementById('dash-filter-start').value = '';
-      document.getElementById('dash-filter-end').value = '';
       handlePeriodFilterChange();
       populateDashSubcategoryFilter();
     }
@@ -2386,49 +2480,72 @@
     function getFilteredTransactions() {
       let txs = getUserData('transactions');
       const period = document.getElementById('dash-filter-period').value;
-      const category = document.getElementById('dash-filter-category').value;
-      const subcategory = document.getElementById('dash-filter-subcategory').value;
+      const cat = document.getElementById('dash-filter-category').value;
+      const sub = document.getElementById('dash-filter-subcategory').value;
 
       const now = new Date();
+      txs = txs.filter(t => {
+        const tDate = new Date(t.date);
 
-      if (period === 'month') {
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        txs = txs.filter(t => {
-          const d = new Date(t.date);
-          return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        });
-      } else if (period === 'week') {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(now.getDate() - 7);
-        txs = txs.filter(t => new Date(t.date) >= oneWeekAgo);
-      } else if (period === 'year') {
-        const currentYear = now.getFullYear();
-        txs = txs.filter(t => new Date(t.date).getFullYear() === currentYear);
-      } else if (period === 'custom') {
-        const startVal = document.getElementById('dash-filter-start').value;
-        const endVal = document.getElementById('dash-filter-end').value;
-
-        if (startVal) {
-          const startDate = new Date(startVal);
-          txs = txs.filter(t => new Date(t.date) >= startDate);
+        if (period === 'month') {
+          if (tDate.getMonth() !== now.getMonth() || tDate.getFullYear() !== now.getFullYear()) return false;
+        } else if (period === 'week') {
+          const oneWeekAgo = new Date(now);
+          oneWeekAgo.setDate(now.getDate() - 7);
+          if (tDate < oneWeekAgo || tDate > now) return false;
+        } else if (period === 'year') {
+          if (tDate.getFullYear() !== now.getFullYear()) return false;
+        } else if (period === 'custom') {
+          const startVal = document.getElementById('dash-filter-start').value;
+          const endVal = document.getElementById('dash-filter-end').value;
+          if (startVal && tDate < new Date(startVal)) return false;
+          if (endVal && tDate > new Date(endVal)) return false;
         }
-        if (endVal) {
-          const endDate = new Date(endVal);
-          endDate.setHours(23, 59, 59, 999);
-          txs = txs.filter(t => new Date(t.date) <= endDate);
-        }
-      }
 
-      if (category !== 'all') {
-        txs = txs.filter(t => t.category === category);
-      }
+        if (cat !== 'all' && t.category !== cat) return false;
+        if (sub !== 'all' && stripCategoryPrefix(t.subcategory) !== sub) return false;
 
-      if (subcategory !== 'all') {
-        txs = txs.filter(t => stripCategoryPrefix(t.subcategory) === subcategory);
-      }
+        return true;
+      });
 
       return txs;
+    }
+
+    function updateDashboardCards() {
+      const txs = getFilteredTransactions();
+      const allTxs = getUserData('transactions');
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayTxs = allTxs.filter(t => t.date === todayStr);
+
+      let todayInc = 0, todayExp = 0;
+      todayTxs.forEach(t => {
+        if (t.type.includes('Income')) todayInc += t.amount;
+        if (t.type.includes('Expense')) todayExp += t.amount;
+      });
+
+      document.getElementById('dash-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
+      document.getElementById('dash-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
+      document.getElementById('dash-today-balance').textContent = `${currentCurrency}${(todayInc - todayExp).toFixed(2)}`;
+
+      let totalInc = 0, totalExp = 0;
+      txs.forEach(t => {
+        if (t.type.includes('Income')) totalInc += t.amount;
+        if (t.type.includes('Expense')) totalExp += t.amount;
+      });
+
+      const netBal = totalInc - totalExp;
+      document.getElementById('dash-total-balance').textContent = `${currentCurrency}${netBal.toFixed(2)}`;
+      document.getElementById('dash-total-income').textContent = `${currentCurrency}${totalInc.toFixed(2)}`;
+      document.getElementById('dash-total-expense').textContent = `${currentCurrency}${totalExp.toFixed(2)}`;
+
+      const investments = getUserData('investments');
+      const totalInv = investments.reduce((sum, i) => sum + i.amount, 0);
+      document.getElementById('dash-total-investment').textContent = `${currentCurrency}${totalInv.toFixed(2)}`;
+
+      const emis = getUserData('emis');
+      const totalEmiBurden = emis.reduce((sum, e) => sum + calculateMonthlyEMI(e.principal, e.rate, e.tenure), 0);
+      document.getElementById('dash-total-emi').textContent = `${currentCurrency}${totalEmiBurden.toFixed(2)}`;
     }
 
     function applyDashboardFilters() {
@@ -2436,126 +2553,70 @@
       renderCharts();
     }
 
-    function updateDashboardCards() {
-      const filteredTxs = getFilteredTransactions();
-      const allTxs = getUserData('transactions');
-      const investments = getUserData('investments');
-      const emis = getUserData('emis');
-
-      const todayStr = new Date().toISOString().split('T')[0];
-      let todayInc = 0;
-      let todayExp = 0;
-
-      allTxs.forEach(t => {
-        if (t.date === todayStr) {
-          if (t.type === 'Income') todayInc += t.amount;
-          if (t.type === 'Expense') todayExp += t.amount;
-        }
-      });
-
-      document.getElementById('dash-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
-      document.getElementById('dash-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
-      const netToday = todayInc - todayExp;
-      document.getElementById('dash-today-balance').textContent = `${netToday >= 0 ? '+' : ''}${currentCurrency}${netToday.toFixed(2)}`;
-      document.getElementById('dash-today-balance').style.color = netToday >= 0 ? 'var(--success)' : 'var(--danger)';
-
-      let inc = 0;
-      let exp = 0;
-
-      filteredTxs.forEach(t => {
-        if (t.type === 'Income') inc += t.amount;
-        if (t.type === 'Expense') exp += t.amount;
-      });
-
-      const totalInv = investments.reduce((sum, i) => sum + i.amount, 0);
-      const totalEmi = emis.reduce((sum, e) => sum + calculateMonthlyEMI(e.principal, e.rate, e.tenure), 0);
-
-      document.getElementById('dash-total-income').textContent = `${currentCurrency}${inc.toFixed(2)}`;
-      document.getElementById('dash-total-expense').textContent = `${currentCurrency}${exp.toFixed(2)}`;
-      document.getElementById('dash-total-balance').textContent = `${currentCurrency}${(inc - exp).toFixed(2)}`;
-      document.getElementById('dash-total-investment').textContent = `${currentCurrency}${totalInv.toFixed(2)}`;
-      document.getElementById('dash-total-emi').textContent = `${currentCurrency}${totalEmi.toFixed(2)}`;
-    }
-
-    /* CHARTS ENGINE */
+    /* CHART RENDERING ROUTINES */
     function renderCharts() {
-      const filteredTxs = getFilteredTransactions();
+      const txs = getFilteredTransactions();
 
-      let income = 0;
-      let expense = 0;
+      let totalInc = 0, totalExp = 0;
       const catTotals = {};
 
-      filteredTxs.forEach(t => {
-        if (t.type === 'Income') income += t.amount;
-        if (t.type === 'Expense') {
-          expense += t.amount;
+      txs.forEach(t => {
+        if (t.type.includes('Income')) totalInc += t.amount;
+        if (t.type.includes('Expense')) {
+          totalExp += t.amount;
           catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
         }
       });
 
-      // Bar Chart - Income vs Expense
-      const ctxBar = document.getElementById('barChart').getContext('2d');
+      const barCtx = document.getElementById('barChart').getContext('2d');
       if (barChartInstance) barChartInstance.destroy();
-
-      barChartInstance = new Chart(ctxBar, {
+      barChartInstance = new Chart(barCtx, {
         type: 'bar',
         data: {
-          labels: ['Total Income', 'Total Expense'],
+          labels: ['Income', 'Expense'],
           datasets: [{
-            data: [income, expense],
-            backgroundColor: ['rgba(16, 185, 129, 0.7)', 'rgba(239, 68, 68, 0.7)'],
-            borderColor: ['#10b981', '#ef4444'],
-            borderWidth: 1,
+            data: [totalInc, totalExp],
+            backgroundColor: ['#10b981', '#ef4444'],
             borderRadius: 8
           }]
         },
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
-          scales: {
-            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
-          }
+          scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }
         }
       });
 
-      // Pie Chart - Expense Category Distribution
-      const ctxPie = document.getElementById('pieChart').getContext('2d');
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
       if (pieChartInstance) pieChartInstance.destroy();
 
-      const pieLabels = Object.keys(catTotals);
-      const pieData = Object.values(catTotals);
+      const catLabels = Object.keys(catTotals);
+      const catData = Object.values(catTotals);
+      const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
 
-      const defaultColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
-
-      pieChartInstance = new Chart(ctxPie, {
+      pieChartInstance = new Chart(pieCtx, {
         type: 'doughnut',
         data: {
-          labels: pieLabels.length === 0 ? ['No Expenses'] : pieLabels,
+          labels: catLabels.length ? catLabels : ['No Expenses'],
           datasets: [{
-            data: pieData.length === 0 ? [1] : pieData,
-            backgroundColor: pieData.length === 0 ? ['rgba(255,255,255,0.1)'] : defaultColors.slice(0, pieLabels.length),
-            borderWidth: 0
+            data: catData.length ? catData : [1],
+            backgroundColor: catData.length ? colors.slice(0, catLabels.length) : ['rgba(255,255,255,0.1)']
           }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } },
-          cutout: '70%'
+          plugins: { legend: { display: false } }
         }
       });
 
-      const legendList = document.getElementById('category-legend-list');
-      if (legendList) {
-        if (pieLabels.length === 0) {
-          legendList.innerHTML = '<span style="color:var(--text-muted);">No expense entries logged for this timeframe.</span>';
+      const legendBox = document.getElementById('category-legend-list');
+      if (legendBox) {
+        if (catLabels.length === 0) {
+          legendBox.innerHTML = '<span style="color:var(--text-muted);">No expense data for chart.</span>';
         } else {
-          legendList.innerHTML = pieLabels.map((cat, i) => `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <span style="display:inline-flex; align-items:center; gap:8px;">
-                <span style="width:10px; height:10px; border-radius:50%; background:${defaultColors[i % defaultColors.length]}; display:inline-block;"></span>
-                ${sanitize(cat)}
-              </span>
+          legendBox.innerHTML = catLabels.map((cat, idx) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span><i class="fa-solid fa-circle" style="color:${colors[idx % colors.length]}; font-size:0.7rem;"></i> ${sanitize(cat)}</span>
               <strong>${currentCurrency}${catTotals[cat].toFixed(2)}</strong>
             </div>
           `).join('');
@@ -2563,7 +2624,7 @@
       }
     }
 
-    /* SPENDING MANAGER CALENDAR */
+    /* CALENDAR ROUTINE */
     function changeCalendarMonth(offset) {
       calendarDate.setMonth(calendarDate.getMonth() + offset);
       renderCalendar();
@@ -2572,295 +2633,204 @@
     function renderCalendar() {
       const year = calendarDate.getFullYear();
       const month = calendarDate.getMonth();
-
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
       document.getElementById('calendar-month-year-title').textContent = `${monthNames[month]} ${year}`;
 
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const daysInPrevMonth = new Date(year, month, 0).getDate();
-
       const container = document.getElementById('calendar-days-container');
       container.innerHTML = '';
 
       const txs = getUserData('transactions');
 
-      // Previous month days fill
-      for (let i = firstDay - 1; i >= 0; i--) {
-        const dayNum = daysInPrevMonth - i;
-        const cell = document.createElement('div');
-        cell.className = 'calendar-cell other-month';
-        cell.innerHTML = `<div class="calendar-date-num">${dayNum}</div>`;
-        container.appendChild(cell);
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-cell other-month';
+        container.appendChild(emptyCell);
       }
 
-      // Current month days fill
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        const dayTxs = txs.filter(t => t.date === dateStr);
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cellDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayTxs = txs.filter(t => t.date === cellDateStr);
 
-        const hasInc = dayTxs.some(t => t.type === 'Income');
-        const hasExp = dayTxs.some(t => t.type === 'Expense');
+        const hasInc = dayTxs.some(t => t.type.includes('Income'));
+        const hasExp = dayTxs.some(t => t.type.includes('Expense'));
 
         const cell = document.createElement('div');
         cell.className = 'calendar-cell';
-        cell.onclick = () => showCalendarDayTransactions(dateStr, dayTxs);
+        cell.onclick = () => showSelectedDateTransactions(cellDateStr, dayTxs);
 
         cell.innerHTML = `
-          <div class="calendar-date-num">${d}</div>
+          <div class="calendar-date-num">${day}</div>
           <div class="calendar-dots">
-            ${hasInc ? '<span class="dot dot-inc"></span>' : ''}
-            ${hasExp ? '<span class="dot dot-exp"></span>' : ''}
-          </div>`;
+            ${hasInc ? '<div class="dot dot-inc"></div>' : ''}
+            ${hasExp ? '<div class="dot dot-exp"></div>' : ''}
+          </div>
+        `;
         container.appendChild(cell);
       }
     }
 
-    function showCalendarDayTransactions(dateStr, dayTxs) {
+    function showSelectedDateTransactions(dateStr, dayTxs) {
       document.getElementById('selected-date-title').textContent = `Transactions for ${dateStr}`;
       const container = document.getElementById('selected-date-tx-list');
 
       if (!dayTxs || dayTxs.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No entries logged for this date.</p>';
+        container.innerHTML = '<p style="color:var(--text-muted);">No entries recorded on this date.</p>';
         return;
       }
 
       container.innerHTML = `
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Account</th><th>Amount</th></tr>
-            </thead>
-            <tbody>
-              ${dayTxs.map(t => `
-                <tr>
-                  <td><span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span></td>
-                  <td>${sanitize(t.category)}</td>
-                  <td>${sanitize(stripCategoryPrefix(t.subcategory))}</td>
-                  <td>${sanitize(t.account)}</td>
-                  <td style="font-weight:700; color:${t.type.includes('Income') ? 'var(--success)' : 'var(--danger)'}">
-                    ${t.type.includes('Income') ? '+' : '-'}${currentCurrency}${t.amount.toFixed(2)}
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>`;
+        <table>
+          <thead><tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Account</th><th>Amount</th></tr></thead>
+          <tbody>
+            ${dayTxs.map(t => `
+              <tr>
+                <td><span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span></td>
+                <td>${sanitize(t.category)}</td>
+                <td>${sanitize(stripCategoryPrefix(t.subcategory))}</td>
+                <td>${sanitize(t.account)}</td>
+                <td style="font-weight:700;">${currentCurrency}${t.amount.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
     }
 
-    /* BUDGET & INSIGHTS PAGE CHARTS */
+    /* INSIGHTS & ANALYTICS CHARTS */
     function renderInsightsCharts() {
       const txs = getUserData('transactions');
-      
-      const monthlyData = {};
+      const datesMap = {};
+
       txs.forEach(t => {
-        const monthKey = t.date.substring(0, 7); // YYYY-MM
-        if (!monthlyData[monthKey]) monthlyData[monthKey] = { income: 0, expense: 0, categories: {} };
-        if (t.type === 'Income') monthlyData[monthKey].income += t.amount;
-        if (t.type === 'Expense') {
-          monthlyData[monthKey].expense += t.amount;
-          monthlyData[monthKey].categories[t.category] = (monthlyData[monthKey].categories[t.category] || 0) + t.amount;
-        }
+        if (!datesMap[t.date]) datesMap[t.date] = { inc: 0, exp: 0 };
+        if (t.type.includes('Income')) datesMap[t.date].inc += t.amount;
+        if (t.type.includes('Expense')) datesMap[t.date].exp += t.amount;
       });
 
-      const sortedMonths = Object.keys(monthlyData).sort();
+      const sortedDates = Object.keys(datesMap).sort();
+      let runningBalance = 0;
+      const balanceData = sortedDates.map(d => {
+        runningBalance += (datesMap[d].inc - datesMap[d].exp);
+        return runningBalance;
+      });
 
-      // Trend Line Chart
-      const ctxLine = document.getElementById('lineTrendChart').getContext('2d');
+      const lineCtx = document.getElementById('lineTrendChart').getContext('2d');
       if (lineTrendChartInstance) lineTrendChartInstance.destroy();
 
-      lineTrendChartInstance = new Chart(ctxLine, {
+      lineTrendChartInstance = new Chart(lineCtx, {
         type: 'line',
         data: {
-          labels: sortedMonths.length === 0 ? ['No Data'] : sortedMonths,
-          datasets: [
-            {
-              label: 'Income Trend',
-              data: sortedMonths.map(m => monthlyData[m].income),
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              fill: true,
-              tension: 0.3
-            },
-            {
-              label: 'Expense Trend',
-              data: sortedMonths.map(m => monthlyData[m].expense),
-              borderColor: '#ef4444',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              fill: true,
-              tension: 0.3
-            }
-          ]
+          labels: sortedDates,
+          datasets: [{
+            label: 'Net Balance Velocity',
+            data: balanceData,
+            borderColor: '#6366f1',
+            tension: 0.3,
+            fill: true,
+            backgroundColor: 'rgba(99, 102, 241, 0.1)'
+          }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { labels: { color: '#94a3b8' } } },
-          scales: {
-            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
-          }
+          scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }
         }
       });
-
-      // Category Expenditure Trends Stacked/Bar
-      const ctxCatTrend = document.getElementById('categoryTrendChart').getContext('2d');
-      if (categoryTrendChartInstance) categoryTrendChartInstance.destroy();
-
-      const allCatNames = new Set();
-      sortedMonths.forEach(m => {
-        Object.keys(monthlyData[m].categories).forEach(c => allCatNames.add(c));
-      });
-
-      const catList = Array.from(allCatNames);
-      const defaultColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
-
-      const categoryDatasets = catList.map((cat, idx) => ({
-        label: cat,
-        data: sortedMonths.map(m => monthlyData[m].categories[cat] || 0),
-        backgroundColor: defaultColors[idx % defaultColors.length]
-      }));
-
-      categoryTrendChartInstance = new Chart(ctxCatTrend, {
-        type: 'bar',
-        data: {
-          labels: sortedMonths.length === 0 ? ['No Data'] : sortedMonths,
-          datasets: categoryDatasets
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { labels: { color: '#94a3b8' } } },
-          scales: {
-            x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } },
-            y: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
-          }
-        }
-      });
-
-      const listContainer = document.getElementById('insights-category-list');
-      if (listContainer) {
-        let totalAllExpense = 0;
-        const totalByCat = {};
-        txs.forEach(t => {
-          if (t.type === 'Expense') {
-            totalAllExpense += t.amount;
-            totalByCat[t.category] = (totalByCat[t.category] || 0) + t.amount;
-          }
-        });
-
-        listContainer.innerHTML = Object.keys(totalByCat).length === 0 ? '<p style="color:var(--text-muted);">No expense entries logged.</p>' : Object.keys(totalByCat).map(c => {
-          const pct = Math.round((totalByCat[c] / (totalAllExpense || 1)) * 100);
-          return `
-            <div style="margin-bottom:12px;">
-              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                <span>${sanitize(c)}</span>
-                <strong>${currentCurrency}${totalByCat[c].toFixed(2)} (${pct}%)</strong>
-              </div>
-              <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
-            </div>`;
-        }).join('');
-      }
     }
 
-    /* SMART WIDGETS RENDER */
+    /* SMART WIDGETS RENDERING */
     function renderSmartWidgets() {
       const txs = getUserData('transactions');
       const todayStr = new Date().toISOString().split('T')[0];
+      const todayTxs = txs.filter(t => t.date === todayStr);
 
-      let todayInc = 0;
-      let todayExp = 0;
-
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      let monthInc = 0;
-      let monthExp = 0;
-
-      txs.forEach(t => {
-        if (t.date === todayStr) {
-          if (t.type === 'Income') todayInc += t.amount;
-          if (t.type === 'Expense') todayExp += t.amount;
-        }
-
-        const d = new Date(t.date);
-        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-          if (t.type === 'Income') monthInc += t.amount;
-          if (t.type === 'Expense') monthExp += t.amount;
-        }
+      let todayInc = 0, todayExp = 0;
+      todayTxs.forEach(t => {
+        if (t.type.includes('Income')) todayInc += t.amount;
+        if (t.type.includes('Expense')) todayExp += t.amount;
       });
 
       document.getElementById('widget-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
       document.getElementById('widget-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
 
-      const monthSurplus = monthInc - monthExp;
-      document.getElementById('widget-month-surplus').textContent = `${currentCurrency}${monthSurplus.toFixed(2)}`;
-      document.getElementById('widget-month-surplus').style.color = monthSurplus >= 0 ? 'var(--success)' : 'var(--danger)';
+      const now = new Date();
+      let monthInc = 0, monthExp = 0;
+      txs.forEach(t => {
+        const d = new Date(t.date);
+        if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+          if (t.type.includes('Income')) monthInc += t.amount;
+          if (t.type.includes('Expense')) monthExp += t.amount;
+        }
+      });
 
+      const surplus = monthInc - monthExp;
       const ratio = monthInc > 0 ? Math.round((monthExp / monthInc) * 100) : 0;
+
+      document.getElementById('widget-month-surplus').textContent = `${currentCurrency}${surplus.toFixed(2)}`;
       document.getElementById('widget-month-ratio').textContent = `${ratio}%`;
     }
 
-    /* MONTHLY SUMMARIES RENDER */
+    /* MONTHLY SUMMARY STATEMENT */
     function renderMonthlySummaries() {
       const txs = getUserData('transactions');
       const monthlyMap = {};
 
       txs.forEach(t => {
-        const monthKey = t.date.substring(0, 7);
-        if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { income: 0, expense: 0 };
-        if (t.type === 'Income') monthlyMap[monthKey].income += t.amount;
-        if (t.type === 'Expense') monthlyMap[monthKey].expense += t.amount;
+        const mKey = t.date.substring(0, 7);
+        if (!monthlyMap[mKey]) monthlyMap[mKey] = { inc: 0, exp: 0 };
+        if (t.type.includes('Income')) monthlyMap[mKey].inc += t.amount;
+        if (t.type.includes('Expense')) monthlyMap[mKey].exp += t.amount;
       });
 
       const container = document.getElementById('monthly-summary-container');
-      const months = Object.keys(monthlyMap).sort().reverse();
+      const sortedMonths = Object.keys(monthlyMap).sort().reverse();
 
-      if (months.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">No monthly data recorded yet.</p>';
+      if (sortedMonths.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">No monthly transactions recorded yet.</p>';
         return;
       }
 
-      container.innerHTML = months.map(m => {
-        const inc = monthlyMap[m].income;
-        const exp = monthlyMap[m].expense;
-        const net = inc - exp;
+      container.innerHTML = sortedMonths.map(m => {
+        const inc = monthlyMap[m].inc;
+        const exp = monthlyMap[m].exp;
+        const margin = inc - exp;
         return `
           <div class="summary-card">
             <div>
-              <h4 style="font-size:1.1rem; font-weight:800;">${m}</h4>
-              <span style="font-size:0.8rem; color:var(--text-muted);">Monthly Financial Statement</span>
-            </div>
-            <div style="display:flex; gap:24px;">
-              <div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">Income</div>
-                <div style="font-weight:800; color:var(--success);">${currentCurrency}${inc.toFixed(2)}</div>
-              </div>
-              <div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">Expense</div>
-                <div style="font-weight:800; color:var(--danger);">${currentCurrency}${exp.toFixed(2)}</div>
-              </div>
-              <div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">Net Margin</div>
-                <div style="font-weight:800; color:${net >= 0 ? 'var(--success)' : 'var(--danger)'};">${net >= 0 ? '+' : ''}${currentCurrency}${net.toFixed(2)}</div>
+              <h4 style="font-size:1.1rem; font-weight:800;">${m} Statement</h4>
+              <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">
+                Income: <span style="color:var(--success); font-weight:700;">+${currentCurrency}${inc.toFixed(2)}</span> | 
+                Expenses: <span style="color:var(--danger); font-weight:700;">-${currentCurrency}${exp.toFixed(2)}</span>
               </div>
             </div>
-          </div>`;
+            <div style="text-align:right;">
+              <div style="font-size:0.75rem; color:var(--text-muted);">Net Margin</div>
+              <div style="font-size:1.3rem; font-weight:800; color:${margin >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                ${currentCurrency}${margin.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        `;
       }).join('');
     }
 
-    /* EXPORT LOGIC */
+    /* EXPORT FUNCTIONALITIES */
     function exportTransactionsCSV() {
       const txs = getUserData('transactions');
-      if (txs.length === 0) { alert('No transactions available to export.'); return; }
+      if (txs.length === 0) { alert('No transactions to export.'); return; }
 
-      let csv = 'ID,Date,Type,Category,Subcategory,Account,ToAccount,Amount\n';
+      let csv = 'Date,Type,Category,Subcategory,Account,ToAccount,Amount\n';
       txs.forEach(t => {
-        csv += `"${t.id}","${t.date}","${t.type}","${t.category}","${stripCategoryPrefix(t.subcategory)}","${t.account}","${t.toAccount || ''}","${t.amount}"\n`;
+        csv += `"${t.date}","${t.type}","${t.category}","${stripCategoryPrefix(t.subcategory)}","${t.account}","${t.toAccount || ''}",${t.amount}\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `Sri_Renga_Vilas_Transactions_${new Date().toISOString().split('T')[0]}.csv`;
+      a.setAttribute('href', url);
+      a.setAttribute('download', `Transactions_${new Date().toISOString().split('T')[0]}.csv`);
       a.click();
     }
 
@@ -2868,20 +2838,99 @@
       exportTransactionsCSV();
     }
 
-    /* ADMIN PANEL LOGIC */
+    /* ADMIN CATEGORY AND USER TABLES (WITH USER LOG TRACKING) */
+    function renderAdminUsersTable() {
+      const users = JSON.parse(localStorage.getItem('srv_users')) || [];
+      const tbody = document.getElementById('admin-users-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = users.map(u => {
+        const uTxs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_transactions`)) || [];
+        const uInvs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_investments`)) || [];
+        const uEmis = JSON.parse(localStorage.getItem(`srv_data_${u.id}_emis`)) || [];
+
+        const isOnline = u.isOnline;
+        const statusBadge = isOnline 
+          ? `<span class="badge badge-online"><span class="status-dot dot-green"></span> Online Now</span>`
+          : `<span class="badge badge-offline"><span class="status-dot dot-gray"></span> Offline</span>`;
+
+        return `
+          <tr>
+            <td>${statusBadge}</td>
+            <td><strong>${sanitize(u.name)}</strong></td>
+            <td>${sanitize(u.username || u.email)}</td>
+            <td>${sanitize(u.phone || 'N/A')}</td>
+            <td><span class="badge ${u.role === 'admin' ? 'badge-investment' : 'badge-transfer'}">${sanitize(u.role)}</span></td>
+            <td><strong>${u.loginCount || 1}</strong></td>
+            <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(u.lastLogin || 'N/A')}</td>
+            <td>${uTxs.length}</td>
+            <td>${uInvs.length}</td>
+            <td>${uEmis.length}</td>
+          </tr>
+        `;
+      }).join('');
+
+      renderAdminLoginLogs();
+    }
+
+    function renderAdminLoginLogs() {
+      const logs = JSON.parse(localStorage.getItem('srv_login_logs')) || [];
+      const tbody = document.getElementById('admin-login-logs-table-body');
+      if (!tbody) return;
+
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No login audit activity recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td><i class="fa-regular fa-clock" style="color:var(--text-muted);"></i> ${sanitize(l.timestamp)}</td>
+          <td><strong>${sanitize(l.userName)}</strong></td>
+          <td>${sanitize(l.email)}</td>
+          <td><span class="badge ${l.role === 'admin' ? 'badge-investment' : 'badge-transfer'}">${sanitize(l.role)}</span></td>
+          <td><span class="badge badge-income">${sanitize(l.status)}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAdminCategoryTable() {
+      const categories = getMasterCategories();
+      const tbody = document.getElementById('admin-cat-table-body');
+      if (!tbody) return;
+
+      let html = '';
+      Object.keys(categories).forEach(type => {
+        Object.keys(categories[type] || {}).forEach(cat => {
+          const subcats = (categories[type][cat] || []).map(s => stripCategoryPrefix(s)).join(', ');
+          html += `
+            <tr>
+              <td><span class="badge ${getBadgeClass(type)}">${type}</span></td>
+              <td><strong>${sanitize(cat)}</strong></td>
+              <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(subcats)}</td>
+              <td>
+                <button onclick="deleteAdminCategory('${type}', '${cat}')" style="background:none; border:none; color:var(--danger); cursor:pointer;">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      });
+      tbody.innerHTML = html;
+    }
+
     function addAdminCategory(e) {
       e.preventDefault();
       const type = document.getElementById('admin-cat-type').value;
       const catName = document.getElementById('admin-cat-name').value.trim();
-      const subcatRaw = document.getElementById('admin-subcat-list').value;
+      const subList = document.getElementById('admin-subcat-list').value.split(',').map(s => stripCategoryPrefix(s.trim())).filter(s => s);
 
-      if (!catName || !subcatRaw) return;
-
-      const subcatList = subcatRaw.split(',').map(s => stripCategoryPrefix(s.trim())).filter(s => s.length > 0);
+      if (!catName || subList.length === 0) return;
 
       let categories = getMasterCategories();
       if (!categories[type]) categories[type] = {};
-      categories[type][catName] = subcatList;
+      categories[type][catName] = subList;
 
       localStorage.setItem('srv_categories', JSON.stringify(categories));
       document.getElementById('admin-cat-name').value = '';
@@ -2900,53 +2949,6 @@
         handleTypeChange();
         initDashboardFilterDropdowns();
       }
-    }
-
-    function renderAdminCategoryTable() {
-      const categories = getMasterCategories();
-      const tbody = document.getElementById('admin-cat-table-body');
-      if (!tbody) return;
-
-      let rows = '';
-      Object.keys(categories).forEach(type => {
-        Object.keys(categories[type]).forEach(cat => {
-          const subcats = categories[type][cat].map(s => stripCategoryPrefix(s)).join(', ');
-          rows += `
-            <tr>
-              <td><span class="badge ${getBadgeClass(type)}">${sanitize(type)}</span></td>
-              <td><strong>${sanitize(cat)}</strong></td>
-              <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(subcats)}</td>
-              <td>
-                <button onclick="deleteAdminCategory('${type}', '${cat}')" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-              </td>
-            </tr>`;
-        });
-      });
-
-      tbody.innerHTML = rows || '<tr><td colspan="4" style="text-align:center;">No custom categories defined.</td></tr>';
-    }
-
-    function renderAdminUsersTable() {
-      const users = JSON.parse(localStorage.getItem('srv_users')) || [];
-      const tbody = document.getElementById('admin-users-table-body');
-      if (!tbody) return;
-
-      tbody.innerHTML = users.map(u => {
-        const txs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_transactions`)) || [];
-        const invs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_investments`)) || [];
-        const emis = JSON.parse(localStorage.getItem(`srv_data_${u.id}_emis`)) || [];
-
-        return `
-          <tr>
-            <td><strong>${sanitize(u.name)}</strong></td>
-            <td>${sanitize(u.username)}</td>
-            <td>${sanitize(u.phone || 'N/A')}</td>
-            <td><span class="badge ${u.role === 'admin' ? 'badge-income' : 'badge-transfer'}">${sanitize(u.role)}</span></td>
-            <td>${txs.length} Entries</td>
-            <td>${invs.length} Assets</td>
-            <td>${emis.length} Loans</td>
-          </tr>`;
-      }).join('');
     }
   </script>
 </body>

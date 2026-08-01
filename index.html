@@ -7,6 +7,8 @@
   
   <!-- Chart.js Engine -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- SheetJS (xlsx) for Excel Export & Import -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -205,6 +207,8 @@
     .btn-danger { background: var(--danger); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
     .btn-export { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); box-shadow: none; padding: 8px 14px; font-size: 0.85rem; }
     .btn-export:hover { background: var(--success); color: #fff; }
+    .btn-import { background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.4); box-shadow: none; padding: 8px 14px; font-size: 0.85rem; }
+    .btn-import:hover { background: var(--primary); color: #fff; }
 
     .view-toggle-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
     .view-btn-group { display: flex; gap: 4px; background: var(--input-bg); padding: 4px; border-radius: 10px; }
@@ -353,6 +357,11 @@
 </head>
 <body data-theme="dark-glass">
 
+  <!-- Hidden File Input Controls for Import Functionality -->
+  <input type="file" id="import-tx-file" accept=".csv, .xlsx, .xls" style="display:none;" onchange="handleTransactionsImport(event)">
+  <input type="file" id="import-inv-file" accept=".csv, .xlsx, .xls" style="display:none;" onchange="handleInvestmentsImport(event)">
+  <input type="file" id="import-emi-file" accept=".csv, .xlsx, .xls" style="display:none;" onchange="handleEMIsImport(event)">
+
   <!-- AUTH SCREEN -->
   <div id="auth-screen">
     <div class="card_3d auth-card">
@@ -438,6 +447,7 @@
       <li class="nav-item" onclick="switchTab('summary')"><i class="fa-solid fa-receipt"></i> Monthly Summaries</li>
       <li class="nav-item" onclick="switchTab('investments')"><i class="fa-solid fa-coins"></i> Investment</li>
       <li class="nav-item" onclick="switchTab('emi')"><i class="fa-solid fa-calculator"></i> Active EMIs</li>
+      <li class="nav-item" onclick="switchTab('user-categories')"><i class="fa-solid fa-gears"></i> Categories & Accounts</li>
       <li class="nav-item" onclick="switchTab('howtouse')"><i class="fa-solid fa-circle-question"></i> How to Use</li>
       <li class="nav-item admin-only" id="admin-nav-item" style="display:none;" onclick="switchTab('admin')">
         <i class="fa-solid fa-user-shield"></i> User & Category Control
@@ -760,8 +770,9 @@
       <div class="view-toggle-bar">
         <h3>Transaction Records</h3>
         <div style="display:flex; gap:10px; align-items:center;">
-          <!-- EXPORT CONTROLS BAR -->
+          <!-- IMPORT & EXPORT CONTROLS BAR -->
           <div class="export-btn-group" style="display:flex; gap:8px;">
+            <button class="btn btn-import" onclick="triggerImport('tx')"><i class="fa-solid fa-file-import"></i> Import CSV/Excel</button>
             <button class="btn btn-export" onclick="exportTransactionsCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
             <button class="btn btn-export" onclick="exportTransactionsExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
           </div>
@@ -909,9 +920,17 @@
 
       <div class="view-toggle-bar">
         <h3>Multiple Investments Portfolio</h3>
-        <div class="view-btn-group">
-          <button id="inv-btn-table" class="view-btn active" onclick="setMode('inv', 'table')"><i class="fa-solid fa-table"></i> Table</button>
-          <button id="inv-btn-grid" class="view-btn" onclick="setMode('inv', 'grid')"><i class="fa-solid fa-border-all"></i> Grid</button>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <!-- IMPORT & EXPORT CONTROLS BAR -->
+          <div class="export-btn-group" style="display:flex; gap:8px;">
+            <button class="btn btn-import" onclick="triggerImport('inv')"><i class="fa-solid fa-file-import"></i> Import CSV/Excel</button>
+            <button class="btn btn-export" onclick="exportInvestmentsCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button class="btn btn-export" onclick="exportInvestmentsExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+          </div>
+          <div class="view-btn-group">
+            <button id="inv-btn-table" class="view-btn active" onclick="setMode('inv', 'table')"><i class="fa-solid fa-table"></i> Table</button>
+            <button id="inv-btn-grid" class="view-btn" onclick="setMode('inv', 'grid')"><i class="fa-solid fa-border-all"></i> Grid</button>
+          </div>
         </div>
       </div>
 
@@ -955,13 +974,78 @@
 
       <div class="view-toggle-bar">
         <h3>Active Loan & EMI Obligations</h3>
-        <div class="view-btn-group">
-          <button id="emi-btn-table" class="view-btn active" onclick="setMode('emi', 'table')"><i class="fa-solid fa-table"></i> Table</button>
-          <button id="emi-btn-grid" class="view-btn" onclick="setMode('emi', 'grid')"><i class="fa-solid fa-border-all"></i> Grid</button>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <!-- IMPORT & EXPORT CONTROLS BAR -->
+          <div class="export-btn-group" style="display:flex; gap:8px;">
+            <button class="btn btn-import" onclick="triggerImport('emi')"><i class="fa-solid fa-file-import"></i> Import CSV/Excel</button>
+            <button class="btn btn-export" onclick="exportEMIsCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button class="btn btn-export" onclick="exportEMIsExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+          </div>
+          <div class="view-btn-group">
+            <button id="emi-btn-table" class="view-btn active" onclick="setMode('emi', 'table')"><i class="fa-solid fa-table"></i> Table</button>
+            <button id="emi-btn-grid" class="view-btn" onclick="setMode('emi', 'grid')"><i class="fa-solid fa-border-all"></i> Grid</button>
+          </div>
         </div>
       </div>
 
       <div class="card_3d" id="emi-display-container"></div>
+    </div>
+
+    <!-- USER CATEGORIES & ACCOUNTS CRUD PANEL -->
+    <div id="page-user-categories" class="view-page">
+      <div class="card_3d" style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 16px; font-size: 1.1rem;"><i class="fa-solid fa-wallet" style="color:var(--primary);"></i> Manage Account Types & Banks</h3>
+        <form onsubmit="addUserAccount(event)">
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Account / Bank Name (e.g. Cash, HDFC, SBI, PayTM, Savings)</label>
+              <input type="text" id="user-account-name" placeholder="Enter bank or account name" required>
+            </div>
+          </div>
+          <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Add Account Type</button>
+        </form>
+        
+        <div style="margin-top: 16px;" id="user-account-tags-list"></div>
+      </div>
+
+      <div class="card_3d" style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 16px; font-size: 1.1rem;"><i class="fa-solid fa-tags" style="color:var(--primary);"></i> Manage Categories & Subcategories</h3>
+        <form onsubmit="addUserCategory(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Transaction Type</label>
+              <select id="user-cat-type" required>
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+                <option value="Transfer">Transfer</option>
+                <option value="Savings">Savings</option>
+                <option value="Investment">Investment</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Category Name</label>
+              <input type="text" id="user-cat-name" placeholder="e.g. Housing, Food, Utilities" required>
+            </div>
+            <div class="form-group">
+              <label>Subcategories (Comma-separated)</label>
+              <input type="text" id="user-subcat-list" placeholder="e.g. Rent, Electricity, Internet" required>
+            </div>
+          </div>
+          <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Add Category / Subcategories</button>
+        </form>
+      </div>
+
+      <div class="card_3d">
+        <h3>Your Category Structure</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Type</th><th>Category</th><th>Subcategories</th><th>Action</th></tr>
+            </thead>
+            <tbody id="user-cat-table-body"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- HOW TO USE PAGE -->
@@ -1015,14 +1099,27 @@
               <br>• Select Categories and dynamically populated Subcategories.
               <br>• If selecting <em>Transfer</em>, specify both <strong>Source Account</strong> and <strong>Destination Account</strong>.
               <br>• Switch between <strong>Table View</strong> and <strong>Grid View</strong>.
-              <br>• Export all data anytime using the <strong>Export CSV</strong> or <strong>Export Excel</strong> buttons.
+              <br>• Import and export data anytime using the <strong>Import CSV/Excel</strong>, <strong>Export CSV</strong>, or <strong>Export Excel</strong> buttons.
             </p>
           </div>
         </div>
 
-        <!-- 4. Spending Manager (Calendar View) -->
+        <!-- 4. Categories & Accounts -->
         <div class="guide-step">
           <div class="guide-num">4</div>
+          <div class="guide-body">
+            <h4><i class="fa-solid fa-gears" style="color:var(--primary);"></i> Categories & Accounts Control</h4>
+            <p>
+              <strong>Purpose:</strong> Create, update, or remove custom bank accounts, transaction categories, and subcategories.<br>
+              <strong>How to Use:</strong>
+              <br>• Logged-in users can navigate to <strong>Categories & Accounts</strong> via the sidebar to perform CRUD actions for account types and category definitions.
+            </p>
+          </div>
+        </div>
+
+        <!-- 5. Spending Manager (Calendar View) -->
+        <div class="guide-step">
+          <div class="guide-num">5</div>
           <div class="guide-body">
             <h4><i class="fa-solid fa-calendar-days" style="color:#38bdf8;"></i> Spending Manager (Calendar)</h4>
             <p>
@@ -1034,9 +1131,9 @@
           </div>
         </div>
 
-        <!-- 5. Budget & Insights -->
+        <!-- 6. Budget & Insights -->
         <div class="guide-step">
-          <div class="guide-num">5</div>
+          <div class="guide-num">6</div>
           <div class="guide-body">
             <h4><i class="fa-solid fa-chart-line" style="color:#a855f7;"></i> Budget & Insights</h4>
             <p>
@@ -1048,9 +1145,9 @@
           </div>
         </div>
 
-        <!-- 6. Smart Widgets -->
+        <!-- 7. Smart Widgets -->
         <div class="guide-step">
-          <div class="guide-num">6</div>
+          <div class="guide-num">7</div>
           <div class="guide-body">
             <h4><i class="fa-solid fa-widgets" style="color:var(--primary);"></i> Smart Widgets</h4>
             <p>
@@ -1062,9 +1159,9 @@
           </div>
         </div>
 
-        <!-- 7. Monthly Summaries -->
+        <!-- 8. Monthly Summaries -->
         <div class="guide-step">
-          <div class="guide-num">7</div>
+          <div class="guide-num">8</div>
           <div class="guide-body">
             <h4><i class="fa-solid fa-receipt" style="color:var(--success);"></i> Monthly Summaries</h4>
             <p>
@@ -1075,22 +1172,23 @@
           </div>
         </div>
 
-        <!-- 8. Investments Portfolio -->
+        <!-- 9. Investments Portfolio -->
         <div class="guide-step">
-          <div class="guide-num">8</div>
+          <div class="guide-num">9</div>
           <div class="guide-body">
             <h4><i class="fa-solid fa-coins" style="color:var(--warning);"></i> Investment Portfolio</h4>
             <p>
               <strong>Purpose:</strong> Record and monitor investments across various asset classes.<br>
               <strong>How to Use:</strong>
               <br>• Log investments specifying Asset Class (Gold, Mutual Funds, Real Estate, Business, etc.), Principal Amount, and Expected Return Rate (% p.a).
+              <br>• Easily import/export portfolio holdings via Excel or CSV.
             </p>
           </div>
         </div>
 
-        <!-- 9. Active EMIs & Loan Engine -->
+        <!-- 10. Active EMIs & Loan Engine -->
         <div class="guide-step">
-          <div class="guide-num">9</div>
+          <div class="guide-num">10</div>
           <div class="guide-body">
             <h4><i class="fa-solid fa-calculator" style="color:#ef4444;"></i> Active EMIs & Loan Engine</h4>
             <p>
@@ -1098,13 +1196,14 @@
               <strong>How to Use:</strong>
               <br>• Input Principal, Annual Interest Rate, Tenure (Months), and Start Date.
               <br>• The system automatically calculates monthly EMI payments using standard financial amortization formulas.
+              <br>• Features built-in CSV and Excel import/export capability.
             </p>
           </div>
         </div>
 
-        <!-- 10. Admin Control Panel -->
+        <!-- 11. Admin Control Panel -->
         <div class="guide-step">
-          <div class="guide-num">10</div>
+          <div class="guide-num">11</div>
           <div class="guide-body">
             <h4><i class="fa-solid fa-user-shield" style="color:var(--primary);"></i> User Tracking & Admin Control Panel</h4>
             <p>
@@ -1454,11 +1553,19 @@
     }
 
     function getMasterCategories() {
+      let userCats = currentUser ? getUserData('user_categories') : null;
+      if (userCats && Object.keys(userCats).length > 0) {
+        return cleanCategoriesPrefixes(userCats);
+      }
       let cats = JSON.parse(localStorage.getItem('srv_categories')) || defaultCategories;
       return cleanCategoriesPrefixes(cats);
     }
 
     function getMasterAccounts() {
+      let userAccs = currentUser ? getUserData('user_accounts') : null;
+      if (userAccs && userAccs.length > 0) {
+        return userAccs;
+      }
       return JSON.parse(localStorage.getItem('srv_accounts')) || defaultAccounts;
     }
 
@@ -1484,6 +1591,7 @@
         }
       });
       renderAccountTags();
+      renderUserAccountTags();
     }
 
     function renderAccountTags() {
@@ -1495,6 +1603,19 @@
         <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); padding:6px 12px; border-radius:12px; font-size:0.85rem; margin-right:8px; margin-bottom:8px;">
           ${sanitize(acc)}
           <i class="fa-solid fa-xmark" onclick="deleteAdminAccount('${acc}')" style="cursor:pointer; color:var(--danger);"></i>
+        </span>
+      `).join('');
+    }
+
+    function renderUserAccountTags() {
+      const accounts = getMasterAccounts();
+      const container = document.getElementById('user-account-tags-list');
+      if (!container) return;
+
+      container.innerHTML = accounts.map(acc => `
+        <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); padding:6px 12px; border-radius:12px; font-size:0.85rem; margin-right:8px; margin-bottom:8px;">
+          ${sanitize(acc)}
+          <i class="fa-solid fa-xmark" onclick="deleteUserAccount('${acc}')" style="cursor:pointer; color:var(--danger);"></i>
         </span>
       `).join('');
     }
@@ -1518,6 +1639,87 @@
       accounts = accounts.filter(a => a !== accName);
       localStorage.setItem('srv_accounts', JSON.stringify(accounts));
       populateAccountsDropdown();
+    }
+
+    function addUserAccount(e) {
+      e.preventDefault();
+      const accName = document.getElementById('user-account-name').value.trim();
+      if (!accName) return;
+
+      let accounts = getMasterAccounts();
+      if (!accounts.includes(accName)) {
+        accounts.push(accName);
+        setUserData('user_accounts', accounts);
+        populateAccountsDropdown();
+        document.getElementById('user-account-name').value = '';
+      }
+    }
+
+    function deleteUserAccount(accName) {
+      let accounts = getMasterAccounts();
+      accounts = accounts.filter(a => a !== accName);
+      setUserData('user_accounts', accounts);
+      populateAccountsDropdown();
+    }
+
+    function addUserCategory(e) {
+      e.preventDefault();
+      const type = document.getElementById('user-cat-type').value;
+      const catName = document.getElementById('user-cat-name').value.trim();
+      const subcatsRaw = document.getElementById('user-subcat-list').value;
+
+      if (!catName || !subcatsRaw) return;
+
+      const subcats = subcatsRaw.split(',').map(s => stripCategoryPrefix(s.trim())).filter(s => s.length > 0);
+      let categories = getMasterCategories();
+
+      if (!categories[type]) categories[type] = {};
+      categories[type][catName] = subcats;
+
+      setUserData('user_categories', categories);
+      document.getElementById('user-cat-name').value = '';
+      document.getElementById('user-subcat-list').value = '';
+
+      renderUserCategoryTable();
+      handleTypeChange();
+      initDashboardFilterDropdowns();
+    }
+
+    function deleteUserCategory(type, catName) {
+      let categories = getMasterCategories();
+      if (categories[type] && categories[type][catName]) {
+        delete categories[type][catName];
+        setUserData('user_categories', categories);
+        renderUserCategoryTable();
+        handleTypeChange();
+        initDashboardFilterDropdowns();
+      }
+    }
+
+    function renderUserCategoryTable() {
+      const categories = getMasterCategories();
+      const tbody = document.getElementById('user-cat-table-body');
+      if (!tbody) return;
+
+      let rowsHtml = '';
+      Object.keys(categories).forEach(type => {
+        Object.keys(categories[type] || {}).forEach(cat => {
+          const subcats = (categories[type][cat] || []).join(', ');
+          rowsHtml += `
+            <tr>
+              <td><span class="badge ${getBadgeClass(type)}">${sanitize(type)}</span></td>
+              <td><strong>${sanitize(cat)}</strong></td>
+              <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(subcats)}</td>
+              <td>
+                <button onclick="deleteUserCategory('${type}', '${cat}')" style="background:none; border:none; color:var(--danger); cursor:pointer;">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </td>
+            </tr>`;
+        });
+      });
+
+      tbody.innerHTML = rowsHtml || '<tr><td colspan="4" style="text-align:center;">No custom category records found.</td></tr>';
     }
 
     function changeTheme() {
@@ -1707,6 +1909,8 @@
       renderGoalsWidget();
       updateDashboardCards();
       renderCharts();
+      renderUserCategoryTable();
+      renderUserAccountTags();
       if (document.getElementById('page-admin').classList.contains('active')) {
         renderAdminCategoryTable();
         renderAdminUsersTable();
@@ -1733,6 +1937,7 @@
         summary: 'Monthly Financial Summaries',
         investments: 'Multiple Portfolio Investment',
         emi: 'Active EMIs & Loan Engine',
+        'user-categories': 'Categories & Account Types Management',
         howtouse: 'How to Use Sri Renga Vilas Finance',
         admin: 'Admin User Tracking & Category Control Panel'
       };
@@ -1749,6 +1954,7 @@
       if (tabId === 'insights') renderInsightsCharts();
       if (tabId === 'widgets') renderSmartWidgets();
       if (tabId === 'summary') renderMonthlySummaries();
+      if (tabId === 'user-categories') renderUserCategoryTable();
       if (tabId === 'admin') {
         renderAdminCategoryTable();
         renderAdminUsersTable();
@@ -2314,20 +2520,20 @@
       const goals = getUserData('goals');
       const essentials = getUserData('essentials');
 
-      const goalsTbody = document.getElementById('goals-table-body');
-      if (goalsTbody) {
-        goalsTbody.innerHTML = goals.length === 0 ? `<tr><td colspan="5" style="text-align:center;">No goals defined.</td></tr>` : goals.map(g => {
-          const pct = Math.min(100, Math.round((g.current / (g.target || 1)) * 100));
+      const goalsBody = document.getElementById('goals-table-body');
+      if (goalsBody) {
+        goalsBody.innerHTML = goals.map(g => {
+          const pct = Math.min(100, Math.round((g.current / g.target) * 100));
           return `
             <tr>
               <td><strong>${sanitize(g.title)}</strong></td>
               <td>${currentCurrency}${g.target.toFixed(2)}</td>
               <td>${currentCurrency}${g.current.toFixed(2)}</td>
               <td>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:${pct}%;"></div></div>
-                  <span style="font-size:0.75rem; font-weight:700;">${pct}%</span>
+                <div class="progress-track" style="width:100px;">
+                  <div class="progress-fill" style="width:${pct}%;"></div>
                 </div>
+                <span style="font-size:0.75rem;">${pct}%</span>
               </td>
               <td>
                 <button onclick="editGoal(${g.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
@@ -2337,23 +2543,22 @@
         }).join('');
       }
 
-      const essentialsTbody = document.getElementById('essentials-table-body');
-      if (essentialsTbody) {
-        essentialsTbody.innerHTML = essentials.length === 0 ? `<tr><td colspan="4" style="text-align:center;">No essentials defined.</td></tr>` : essentials.map(e => `
+      const essentialsBody = document.getElementById('essentials-table-body');
+      if (essentialsBody) {
+        essentialsBody.innerHTML = essentials.map(e => `
           <tr>
             <td><strong>${sanitize(e.title)}</strong></td>
             <td>${sanitize(e.subtitle)}</td>
             <td>
               <span class="badge ${e.status === 'covered' ? 'badge-income' : 'badge-expense'}">
-                ${e.status === 'covered' ? 'Covered' : 'Attention Needed'}
+                ${e.status === 'covered' ? 'Covered' : 'Attention'}
               </span>
             </td>
             <td>
               <button onclick="editEssential(${e.id})" style="background:none; border:none; color:var(--primary); cursor:pointer; margin-right:8px;"><i class="fa-solid fa-pen"></i></button>
               <button onclick="deleteEssential(${e.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
             </td>
-          </tr>
-        `).join('');
+          </tr>`).join('');
       }
     }
 
@@ -2361,37 +2566,33 @@
       const goals = getUserData('goals');
       const essentials = getUserData('essentials');
 
-      const activeCount = goals.length;
-      const onTrackCount = goals.filter(g => (g.current / (g.target || 1)) >= 0.5).length;
-      document.getElementById('dash-active-goals-count').textContent = `${activeCount} Active`;
-      document.getElementById('dash-ontrack-goals-count').textContent = `${onTrackCount} on track`;
+      document.getElementById('dash-active-goals-count').textContent = `${goals.length} Active`;
+      const onTrack = goals.filter(g => (g.current / g.target) >= 0.5).length;
+      document.getElementById('dash-ontrack-goals-count').textContent = `${onTrack} on track`;
 
       const coveredCount = essentials.filter(e => e.status === 'covered').length;
       document.getElementById('dash-essentials-covered-count').textContent = `${coveredCount} of ${essentials.length}`;
 
-      const txs = getUserData('transactions');
-      document.getElementById('dash-snapshots-count').textContent = txs.length;
-
-      const progressList = document.getElementById('dash-goal-progress-list');
-      if (progressList) {
-        progressList.innerHTML = goals.length === 0 ? `<p style="font-size:0.8rem; color:var(--text-muted);">No active goals.</p>` : goals.slice(0, 3).map(g => {
-          const pct = Math.min(100, Math.round((g.current / (g.target || 1)) * 100));
+      const goalsList = document.getElementById('dash-goal-progress-list');
+      if (goalsList) {
+        goalsList.innerHTML = goals.slice(0, 3).map(g => {
+          const pct = Math.min(100, Math.round((g.current / g.target) * 100));
           return `
             <div class="progress-item">
               <div class="progress-labels">
                 <span>${sanitize(g.title)}</span>
-                <span>${currentCurrency}${g.current.toLocaleString()} / ${currentCurrency}${g.target.toLocaleString()} (${pct}%)</span>
+                <span>${pct}%</span>
               </div>
               <div class="progress-track">
-                <div class="progress-fill" style="width: ${pct}%;"></div>
+                <div class="progress-fill" style="width:${pct}%;"></div>
               </div>
             </div>`;
         }).join('');
       }
 
-      const checkList = document.getElementById('dash-essentials-check-list');
-      if (checkList) {
-        checkList.innerHTML = essentials.length === 0 ? `<p style="font-size:0.8rem; color:var(--text-muted);">No essentials recorded.</p>` : essentials.slice(0, 3).map(e => `
+      const essentialsList = document.getElementById('dash-essentials-check-list');
+      if (essentialsList) {
+        essentialsList.innerHTML = essentials.slice(0, 3).map(e => `
           <div class="essential-item">
             <div class="essential-icon ${e.status === 'covered' ? 'success' : 'warning'}">
               <i class="fa-solid ${e.status === 'covered' ? 'fa-check' : 'fa-exclamation'}"></i>
@@ -2404,148 +2605,59 @@
       }
     }
 
-    /* DASHBOARD FILTERS & CARDS UPDATE */
     function initDashboardFilterDropdowns() {
+      const categories = getMasterCategories();
       const catSelect = document.getElementById('dash-filter-category');
-      if (!catSelect) return;
       catSelect.innerHTML = '<option value="all">All Category</option>';
 
-      const categories = getMasterCategories();
-      const catSet = new Set();
       Object.keys(categories).forEach(type => {
-        Object.keys(categories[type] || {}).forEach(c => catSet.add(c));
-      });
-
-      catSet.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        catSelect.appendChild(opt);
+        Object.keys(categories[type] || {}).forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          catSelect.appendChild(opt);
+        });
       });
 
       populateDashSubcategoryFilter();
     }
 
     function populateDashSubcategoryFilter() {
-      const selectedCat = document.getElementById('dash-filter-category').value;
+      const cat = document.getElementById('dash-filter-category').value;
       const subSelect = document.getElementById('dash-filter-subcategory');
-      if (!subSelect) return;
-
       subSelect.innerHTML = '<option value="all">All Subcategory</option>';
-      if (selectedCat === 'all') {
-        applyDashboardFilters();
-        return;
-      }
+
+      if (cat === 'all') return;
 
       const categories = getMasterCategories();
-      const subSet = new Set();
       Object.keys(categories).forEach(type => {
-        if (categories[type][selectedCat]) {
-          categories[type][selectedCat].forEach(s => subSet.add(stripCategoryPrefix(s)));
+        if (categories[type][cat]) {
+          categories[type][cat].forEach(sub => {
+            const cleanSub = stripCategoryPrefix(sub);
+            const opt = document.createElement('option');
+            opt.value = cleanSub;
+            opt.textContent = cleanSub;
+            subSelect.appendChild(opt);
+          });
         }
-      });
-
-      subSet.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = s;
-        subSelect.appendChild(opt);
       });
 
       applyDashboardFilters();
     }
 
     function handlePeriodFilterChange() {
-      const period = document.getElementById('dash-filter-period').value;
-      const startGrp = document.getElementById('dash-custom-start-group');
-      const endGrp = document.getElementById('dash-custom-end-group');
+      const val = document.getElementById('dash-filter-period').value;
+      const startGroup = document.getElementById('dash-custom-start-group');
+      const endGroup = document.getElementById('dash-custom-end-group');
 
-      if (period === 'custom') {
-        startGrp.style.display = 'flex';
-        endGrp.style.display = 'flex';
+      if (val === 'custom') {
+        startGroup.style.display = 'flex';
+        endGroup.style.display = 'flex';
       } else {
-        startGrp.style.display = 'none';
-        endGrp.style.display = 'none';
+        startGroup.style.display = 'none';
+        endGroup.style.display = 'none';
       }
       applyDashboardFilters();
-    }
-
-    function resetDashboardFilters() {
-      document.getElementById('dash-filter-period').value = 'all';
-      document.getElementById('dash-filter-category').value = 'all';
-      handlePeriodFilterChange();
-      populateDashSubcategoryFilter();
-    }
-
-    function getFilteredTransactions() {
-      let txs = getUserData('transactions');
-      const period = document.getElementById('dash-filter-period').value;
-      const cat = document.getElementById('dash-filter-category').value;
-      const sub = document.getElementById('dash-filter-subcategory').value;
-
-      const now = new Date();
-      txs = txs.filter(t => {
-        const tDate = new Date(t.date);
-
-        if (period === 'month') {
-          if (tDate.getMonth() !== now.getMonth() || tDate.getFullYear() !== now.getFullYear()) return false;
-        } else if (period === 'week') {
-          const oneWeekAgo = new Date(now);
-          oneWeekAgo.setDate(now.getDate() - 7);
-          if (tDate < oneWeekAgo || tDate > now) return false;
-        } else if (period === 'year') {
-          if (tDate.getFullYear() !== now.getFullYear()) return false;
-        } else if (period === 'custom') {
-          const startVal = document.getElementById('dash-filter-start').value;
-          const endVal = document.getElementById('dash-filter-end').value;
-          if (startVal && tDate < new Date(startVal)) return false;
-          if (endVal && tDate > new Date(endVal)) return false;
-        }
-
-        if (cat !== 'all' && t.category !== cat) return false;
-        if (sub !== 'all' && stripCategoryPrefix(t.subcategory) !== sub) return false;
-
-        return true;
-      });
-
-      return txs;
-    }
-
-    function updateDashboardCards() {
-      const txs = getFilteredTransactions();
-      const allTxs = getUserData('transactions');
-
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todayTxs = allTxs.filter(t => t.date === todayStr);
-
-      let todayInc = 0, todayExp = 0;
-      todayTxs.forEach(t => {
-        if (t.type.includes('Income')) todayInc += t.amount;
-        if (t.type.includes('Expense')) todayExp += t.amount;
-      });
-
-      document.getElementById('dash-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
-      document.getElementById('dash-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
-      document.getElementById('dash-today-balance').textContent = `${currentCurrency}${(todayInc - todayExp).toFixed(2)}`;
-
-      let totalInc = 0, totalExp = 0;
-      txs.forEach(t => {
-        if (t.type.includes('Income')) totalInc += t.amount;
-        if (t.type.includes('Expense')) totalExp += t.amount;
-      });
-
-      const netBal = totalInc - totalExp;
-      document.getElementById('dash-total-balance').textContent = `${currentCurrency}${netBal.toFixed(2)}`;
-      document.getElementById('dash-total-income').textContent = `${currentCurrency}${totalInc.toFixed(2)}`;
-      document.getElementById('dash-total-expense').textContent = `${currentCurrency}${totalExp.toFixed(2)}`;
-
-      const investments = getUserData('investments');
-      const totalInv = investments.reduce((sum, i) => sum + i.amount, 0);
-      document.getElementById('dash-total-investment').textContent = `${currentCurrency}${totalInv.toFixed(2)}`;
-
-      const emis = getUserData('emis');
-      const totalEmiBurden = emis.reduce((sum, e) => sum + calculateMonthlyEMI(e.principal, e.rate, e.tenure), 0);
-      document.getElementById('dash-total-emi').textContent = `${currentCurrency}${totalEmiBurden.toFixed(2)}`;
     }
 
     function applyDashboardFilters() {
@@ -2553,345 +2665,287 @@
       renderCharts();
     }
 
-    /* CHART RENDERING ROUTINES */
+    function resetDashboardFilters() {
+      document.getElementById('dash-filter-period').value = 'all';
+      document.getElementById('dash-filter-category').value = 'all';
+      handlePeriodFilterChange();
+      initDashboardFilterDropdowns();
+    }
+
+    function getFilteredTransactions() {
+      let txs = getUserData('transactions');
+      const period = document.getElementById('dash-filter-period').value;
+      const selectedCat = document.getElementById('dash-filter-category').value;
+      const selectedSubcat = document.getElementById('dash-filter-subcategory').value;
+
+      const now = new Date();
+
+      if (period === 'month') {
+        txs = txs.filter(t => {
+          const d = new Date(t.date);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
+      } else if (period === 'week') {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        txs = txs.filter(t => new Date(t.date) >= startOfWeek);
+      } else if (period === 'year') {
+        txs = txs.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
+      } else if (period === 'custom') {
+        const startVal = document.getElementById('dash-filter-start').value;
+        const endVal = document.getElementById('dash-filter-end').value;
+        if (startVal) txs = txs.filter(t => new Date(t.date) >= new Date(startVal));
+        if (endVal) txs = txs.filter(t => new Date(t.date) <= new Date(endVal));
+      }
+
+      if (selectedCat !== 'all') {
+        txs = txs.filter(t => t.category === selectedCat);
+      }
+
+      if (selectedSubcat !== 'all') {
+        txs = txs.filter(t => stripCategoryPrefix(t.subcategory) === selectedSubcat);
+      }
+
+      return txs;
+    }
+
+    function updateDashboardCards() {
+      const txs = getFilteredTransactions();
+      const investments = getUserData('investments');
+      const emis = getUserData('emis');
+
+      let income = 0, expense = 0;
+      txs.forEach(t => {
+        if (t.type === 'Income') income += t.amount;
+        if (t.type === 'Expense') expense += t.amount;
+      });
+
+      const netBalance = income - expense;
+      const totalInv = investments.reduce((sum, inv) => sum + inv.amount, 0);
+      const totalEmi = emis.reduce((sum, e) => sum + calculateMonthlyEMI(e.principal, e.rate, e.tenure), 0);
+
+      document.getElementById('dash-total-balance').textContent = `${currentCurrency}${netBalance.toFixed(2)}`;
+      document.getElementById('dash-total-income').textContent = `${currentCurrency}${income.toFixed(2)}`;
+      document.getElementById('dash-total-expense').textContent = `${currentCurrency}${expense.toFixed(2)}`;
+      document.getElementById('dash-total-investment').textContent = `${currentCurrency}${totalInv.toFixed(2)}`;
+      document.getElementById('dash-total-emi').textContent = `${currentCurrency}${totalEmi.toFixed(2)}`;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const allTxs = getUserData('transactions');
+      const todayTxs = allTxs.filter(t => t.date === todayStr);
+
+      let todayIncome = 0, todaySpend = 0;
+      todayTxs.forEach(t => {
+        if (t.type === 'Income') todayIncome += t.amount;
+        if (t.type === 'Expense') todaySpend += t.amount;
+      });
+
+      document.getElementById('dash-today-income').textContent = `${currentCurrency}${todayIncome.toFixed(2)}`;
+      document.getElementById('dash-today-spend').textContent = `${currentCurrency}${todaySpend.toFixed(2)}`;
+      document.getElementById('dash-today-balance').textContent = `${currentCurrency}${(todayIncome - todaySpend).toFixed(2)}`;
+    }
+
     function renderCharts() {
       const txs = getFilteredTransactions();
 
-      let totalInc = 0, totalExp = 0;
-      const catTotals = {};
+      let income = 0, expense = 0;
+      const catSpend = {};
 
       txs.forEach(t => {
-        if (t.type.includes('Income')) totalInc += t.amount;
-        if (t.type.includes('Expense')) {
-          totalExp += t.amount;
-          catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
+        if (t.type === 'Income') income += t.amount;
+        if (t.type === 'Expense') {
+          expense += t.amount;
+          catSpend[t.category] = (catSpend[t.category] || 0) + t.amount;
         }
       });
 
-      const barCtx = document.getElementById('barChart').getContext('2d');
-      if (barChartInstance) barChartInstance.destroy();
-      barChartInstance = new Chart(barCtx, {
-        type: 'bar',
-        data: {
-          labels: ['Income', 'Expense'],
-          datasets: [{
-            data: [totalInc, totalExp],
-            backgroundColor: ['#10b981', '#ef4444'],
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }
-        }
-      });
-
-      const pieCtx = document.getElementById('pieChart').getContext('2d');
-      if (pieChartInstance) pieChartInstance.destroy();
-
-      const catLabels = Object.keys(catTotals);
-      const catData = Object.values(catTotals);
-      const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#38bdf8', '#a855f7', '#ec4899', '#14b8a6'];
-
-      pieChartInstance = new Chart(pieCtx, {
-        type: 'doughnut',
-        data: {
-          labels: catLabels.length ? catLabels : ['No Expenses'],
-          datasets: [{
-            data: catData.length ? catData : [1],
-            backgroundColor: catData.length ? colors.slice(0, catLabels.length) : ['rgba(255,255,255,0.1)']
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } }
-        }
-      });
-
-      const legendBox = document.getElementById('category-legend-list');
-      if (legendBox) {
-        if (catLabels.length === 0) {
-          legendBox.innerHTML = '<span style="color:var(--text-muted);">No expense data for chart.</span>';
-        } else {
-          legendBox.innerHTML = catLabels.map((cat, idx) => `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <span><i class="fa-solid fa-circle" style="color:${colors[idx % colors.length]}; font-size:0.7rem;"></i> ${sanitize(cat)}</span>
-              <strong>${currentCurrency}${catTotals[cat].toFixed(2)}</strong>
-            </div>
-          `).join('');
-        }
+      const barCtx = document.getElementById('barChart');
+      if (barCtx) {
+        if (barChartInstance) barChartInstance.destroy();
+        barChartInstance = new Chart(barCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Income', 'Expense'],
+            datasets: [{
+              label: 'Amount',
+              data: [income, expense],
+              backgroundColor: ['#10b981', '#ef4444'],
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+          }
+        });
       }
-    }
 
-    /* CALENDAR ROUTINE */
-    function changeCalendarMonth(offset) {
-      calendarDate.setMonth(calendarDate.getMonth() + offset);
-      renderCalendar();
+      const pieCtx = document.getElementById('pieChart');
+      if (pieCtx) {
+        if (pieChartInstance) pieChartInstance.destroy();
+        const labels = Object.keys(catSpend);
+        const data = Object.values(catSpend);
+
+        pieChartInstance = new Chart(pieCtx, {
+          type: 'doughnut',
+          data: {
+            labels: labels.length ? labels : ['No Data'],
+            datasets: [{
+              data: data.length ? data : [1],
+              backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#38bdf8', '#a855f7', '#ef4444']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+          }
+        });
+      }
     }
 
     function renderCalendar() {
       const year = calendarDate.getFullYear();
       const month = calendarDate.getMonth();
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       document.getElementById('calendar-month-year-title').textContent = `${monthNames[month]} ${year}`;
 
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
+
       const container = document.getElementById('calendar-days-container');
       container.innerHTML = '';
 
-      const txs = getUserData('transactions');
-
       for (let i = 0; i < firstDay; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'calendar-cell other-month';
-        container.appendChild(emptyCell);
+        container.innerHTML += `<div class="calendar-cell other-month"></div>`;
       }
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const cellDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const dayTxs = txs.filter(t => t.date === cellDateStr);
+      const txs = getUserData('transactions');
 
-        const hasInc = dayTxs.some(t => t.type.includes('Income'));
-        const hasExp = dayTxs.some(t => t.type.includes('Expense'));
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dayTxs = txs.filter(t => t.date === dateStr);
 
-        const cell = document.createElement('div');
-        cell.className = 'calendar-cell';
-        cell.onclick = () => showSelectedDateTransactions(cellDateStr, dayTxs);
+        let dotsHtml = '';
+        if (dayTxs.some(t => t.type === 'Income')) dotsHtml += `<div class="dot dot-inc"></div>`;
+        if (dayTxs.some(t => t.type === 'Expense')) dotsHtml += `<div class="dot dot-exp"></div>`;
 
-        cell.innerHTML = `
-          <div class="calendar-date-num">${day}</div>
-          <div class="calendar-dots">
-            ${hasInc ? '<div class="dot dot-inc"></div>' : ''}
-            ${hasExp ? '<div class="dot dot-exp"></div>' : ''}
-          </div>
-        `;
-        container.appendChild(cell);
+        container.innerHTML += `
+          <div class="calendar-cell" onclick="selectCalendarDate('${dateStr}')">
+            <div class="calendar-date-num">${d}</div>
+            <div class="calendar-dots">${dotsHtml}</div>
+          </div>`;
       }
     }
 
-    function showSelectedDateTransactions(dateStr, dayTxs) {
-      document.getElementById('selected-date-title').textContent = `Transactions for ${dateStr}`;
-      const container = document.getElementById('selected-date-tx-list');
+    function changeCalendarMonth(offset) {
+      calendarDate.setMonth(calendarDate.getMonth() + offset);
+      renderCalendar();
+    }
 
-      if (!dayTxs || dayTxs.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No entries recorded on this date.</p>';
+    function selectCalendarDate(dateStr) {
+      document.getElementById('selected-date-title').textContent = `Transactions for ${dateStr}`;
+      const txs = getUserData('transactions').filter(t => t.date === dateStr);
+      const listContainer = document.getElementById('selected-date-tx-list');
+
+      if (!txs || txs.length === 0) {
+        listContainer.innerHTML = '<p style="color:var(--text-muted);">No entries on this date.</p>';
         return;
       }
 
-      container.innerHTML = `
-        <table>
-          <thead><tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Account</th><th>Amount</th></tr></thead>
-          <tbody>
-            ${dayTxs.map(t => `
-              <tr>
-                <td><span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span></td>
-                <td>${sanitize(t.category)}</td>
-                <td>${sanitize(stripCategoryPrefix(t.subcategory))}</td>
-                <td>${sanitize(t.account)}</td>
-                <td style="font-weight:700;">${currentCurrency}${t.amount.toFixed(2)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
+      listContainer.innerHTML = `
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Type</th><th>Category</th><th>Subcategory</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              ${txs.map(t => `
+                <tr>
+                  <td><span class="badge ${getBadgeClass(t.type)}">${sanitize(t.type)}</span></td>
+                  <td>${sanitize(t.category)}</td>
+                  <td>${sanitize(stripCategoryPrefix(t.subcategory))}</td>
+                  <td style="font-weight:700;">${currentCurrency}${t.amount.toFixed(2)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
     }
 
-    /* INSIGHTS & ANALYTICS CHARTS */
     function renderInsightsCharts() {
       const txs = getUserData('transactions');
-      const datesMap = {};
-
-      txs.forEach(t => {
-        if (!datesMap[t.date]) datesMap[t.date] = { inc: 0, exp: 0 };
-        if (t.type.includes('Income')) datesMap[t.date].inc += t.amount;
-        if (t.type.includes('Expense')) datesMap[t.date].exp += t.amount;
-      });
-
-      const sortedDates = Object.keys(datesMap).sort();
-      let runningBalance = 0;
-      const balanceData = sortedDates.map(d => {
-        runningBalance += (datesMap[d].inc - datesMap[d].exp);
-        return runningBalance;
-      });
-
-      const lineCtx = document.getElementById('lineTrendChart').getContext('2d');
-      if (lineTrendChartInstance) lineTrendChartInstance.destroy();
-
-      lineTrendChartInstance = new Chart(lineCtx, {
-        type: 'line',
-        data: {
-          labels: sortedDates,
-          datasets: [{
-            label: 'Net Balance Velocity',
-            data: balanceData,
-            borderColor: '#6366f1',
-            tension: 0.3,
-            fill: true,
-            backgroundColor: 'rgba(99, 102, 241, 0.1)'
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }
-        }
-      });
-    }
-
-    /* SMART WIDGETS RENDERING */
-    function renderSmartWidgets() {
-      const txs = getUserData('transactions');
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todayTxs = txs.filter(t => t.date === todayStr);
-
-      let todayInc = 0, todayExp = 0;
-      todayTxs.forEach(t => {
-        if (t.type.includes('Income')) todayInc += t.amount;
-        if (t.type.includes('Expense')) todayExp += t.amount;
-      });
-
-      document.getElementById('widget-today-spend').textContent = `${currentCurrency}${todayExp.toFixed(2)}`;
-      document.getElementById('widget-today-income').textContent = `${currentCurrency}${todayInc.toFixed(2)}`;
-
-      const now = new Date();
-      let monthInc = 0, monthExp = 0;
-      txs.forEach(t => {
-        const d = new Date(t.date);
-        if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
-          if (t.type.includes('Income')) monthInc += t.amount;
-          if (t.type.includes('Expense')) monthExp += t.amount;
-        }
-      });
-
-      const surplus = monthInc - monthExp;
-      const ratio = monthInc > 0 ? Math.round((monthExp / monthInc) * 100) : 0;
-
-      document.getElementById('widget-month-surplus').textContent = `${currentCurrency}${surplus.toFixed(2)}`;
-      document.getElementById('widget-month-ratio').textContent = `${ratio}%`;
-    }
-
-    /* MONTHLY SUMMARY STATEMENT */
-    function renderMonthlySummaries() {
-      const txs = getUserData('transactions');
-      const monthlyMap = {};
+      const months = {};
 
       txs.forEach(t => {
         const mKey = t.date.substring(0, 7);
-        if (!monthlyMap[mKey]) monthlyMap[mKey] = { inc: 0, exp: 0 };
-        if (t.type.includes('Income')) monthlyMap[mKey].inc += t.amount;
-        if (t.type.includes('Expense')) monthlyMap[mKey].exp += t.amount;
+        if (!months[mKey]) months[mKey] = { income: 0, expense: 0 };
+        if (t.type === 'Income') months[mKey].income += t.amount;
+        if (t.type === 'Expense') months[mKey].expense += t.amount;
+      });
+
+      const labels = Object.keys(months).sort();
+      const incomeData = labels.map(l => months[l].income);
+      const expenseData = labels.map(l => months[l].expense);
+
+      const lineCtx = document.getElementById('lineTrendChart');
+      if (lineCtx) {
+        if (lineTrendChartInstance) lineTrendChartInstance.destroy();
+        lineTrendChartInstance = new Chart(lineCtx, {
+          type: 'line',
+          data: {
+            labels: labels.length ? labels : ['No Data'],
+            datasets: [
+              { label: 'Income', data: incomeData, borderColor: '#10b981', fill: false },
+              { label: 'Expense', data: expenseData, borderColor: '#ef4444', fill: false }
+            ]
+          },
+          options: { responsive: true }
+        });
+      }
+    }
+
+    function renderSmartWidgets() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const txs = getUserData('transactions');
+
+      let todayIncome = 0, todaySpend = 0;
+      txs.filter(t => t.date === todayStr).forEach(t => {
+        if (t.type === 'Income') todayIncome += t.amount;
+        if (t.type === 'Expense') todaySpend += t.amount;
+      });
+
+      document.getElementById('widget-today-spend').textContent = `${currentCurrency}${todaySpend.toFixed(2)}`;
+      document.getElementById('widget-today-income').textContent = `${currentCurrency}${todayIncome.toFixed(2)}`;
+    }
+
+    function renderMonthlySummaries() {
+      const txs = getUserData('transactions');
+      const monthlyData = {};
+
+      txs.forEach(t => {
+        const monthKey = t.date.substring(0, 7);
+        if (!monthlyData[monthKey]) monthlyData[monthKey] = { income: 0, expense: 0 };
+        if (t.type === 'Income') monthlyData[monthKey].income += t.amount;
+        if (t.type === 'Expense') monthlyData[monthKey].expense += t.amount;
       });
 
       const container = document.getElementById('monthly-summary-container');
-      const sortedMonths = Object.keys(monthlyMap).sort().reverse();
-
-      if (sortedMonths.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">No monthly transactions recorded yet.</p>';
-        return;
-      }
-
-      container.innerHTML = sortedMonths.map(m => {
-        const inc = monthlyMap[m].inc;
-        const exp = monthlyMap[m].exp;
-        const margin = inc - exp;
+      container.innerHTML = Object.keys(monthlyData).sort().reverse().map(m => {
+        const data = monthlyData[m];
+        const surplus = data.income - data.expense;
         return `
           <div class="summary-card">
             <div>
-              <h4 style="font-size:1.1rem; font-weight:800;">${m} Statement</h4>
-              <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">
-                Income: <span style="color:var(--success); font-weight:700;">+${currentCurrency}${inc.toFixed(2)}</span> | 
-                Expenses: <span style="color:var(--danger); font-weight:700;">-${currentCurrency}${exp.toFixed(2)}</span>
-              </div>
+              <h4 style="font-size:1.1rem;">${m}</h4>
+              <p style="font-size:0.8rem; color:var(--text-muted);">Monthly Financial Statement</p>
             </div>
-            <div style="text-align:right;">
-              <div style="font-size:0.75rem; color:var(--text-muted);">Net Margin</div>
-              <div style="font-size:1.3rem; font-weight:800; color:${margin >= 0 ? 'var(--success)' : 'var(--danger)'};">
-                ${currentCurrency}${margin.toFixed(2)}
-              </div>
+            <div style="display:flex; gap:20px;">
+              <div>Income: <span style="color:var(--success); font-weight:700;">${currentCurrency}${data.income.toFixed(2)}</span></div>
+              <div>Expense: <span style="color:var(--danger); font-weight:700;">${currentCurrency}${data.expense.toFixed(2)}</span></div>
+              <div>Net: <span style="font-weight:700;">${currentCurrency}${surplus.toFixed(2)}</span></div>
             </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    /* EXPORT FUNCTIONALITIES */
-    function exportTransactionsCSV() {
-      const txs = getUserData('transactions');
-      if (txs.length === 0) { alert('No transactions to export.'); return; }
-
-      let csv = 'Date,Type,Category,Subcategory,Account,ToAccount,Amount\n';
-      txs.forEach(t => {
-        csv += `"${t.date}","${t.type}","${t.category}","${stripCategoryPrefix(t.subcategory)}","${t.account}","${t.toAccount || ''}",${t.amount}\n`;
-      });
-
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.setAttribute('href', url);
-      a.setAttribute('download', `Transactions_${new Date().toISOString().split('T')[0]}.csv`);
-      a.click();
-    }
-
-    function exportTransactionsExcel() {
-      exportTransactionsCSV();
-    }
-
-    /* ADMIN CATEGORY AND USER TABLES (WITH USER LOG TRACKING) */
-    function renderAdminUsersTable() {
-      const users = JSON.parse(localStorage.getItem('srv_users')) || [];
-      const tbody = document.getElementById('admin-users-table-body');
-      if (!tbody) return;
-
-      tbody.innerHTML = users.map(u => {
-        const uTxs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_transactions`)) || [];
-        const uInvs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_investments`)) || [];
-        const uEmis = JSON.parse(localStorage.getItem(`srv_data_${u.id}_emis`)) || [];
-
-        const isOnline = u.isOnline;
-        const statusBadge = isOnline 
-          ? `<span class="badge badge-online"><span class="status-dot dot-green"></span> Online Now</span>`
-          : `<span class="badge badge-offline"><span class="status-dot dot-gray"></span> Offline</span>`;
-
-        return `
-          <tr>
-            <td>${statusBadge}</td>
-            <td><strong>${sanitize(u.name)}</strong></td>
-            <td>${sanitize(u.username || u.email)}</td>
-            <td>${sanitize(u.phone || 'N/A')}</td>
-            <td><span class="badge ${u.role === 'admin' ? 'badge-investment' : 'badge-transfer'}">${sanitize(u.role)}</span></td>
-            <td><strong>${u.loginCount || 1}</strong></td>
-            <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(u.lastLogin || 'N/A')}</td>
-            <td>${uTxs.length}</td>
-            <td>${uInvs.length}</td>
-            <td>${uEmis.length}</td>
-          </tr>
-        `;
-      }).join('');
-
-      renderAdminLoginLogs();
-    }
-
-    function renderAdminLoginLogs() {
-      const logs = JSON.parse(localStorage.getItem('srv_login_logs')) || [];
-      const tbody = document.getElementById('admin-login-logs-table-body');
-      if (!tbody) return;
-
-      if (logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No login audit activity recorded yet.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = logs.map(l => `
-        <tr>
-          <td><i class="fa-regular fa-clock" style="color:var(--text-muted);"></i> ${sanitize(l.timestamp)}</td>
-          <td><strong>${sanitize(l.userName)}</strong></td>
-          <td>${sanitize(l.email)}</td>
-          <td><span class="badge ${l.role === 'admin' ? 'badge-investment' : 'badge-transfer'}">${sanitize(l.role)}</span></td>
-          <td><span class="badge badge-income">${sanitize(l.status)}</span></td>
-        </tr>
-      `).join('');
+          </div>`;
+      }).join('') || '<p style="color:var(--text-muted);">No monthly data to display.</p>';
     }
 
     function renderAdminCategoryTable() {
@@ -2899,13 +2953,13 @@
       const tbody = document.getElementById('admin-cat-table-body');
       if (!tbody) return;
 
-      let html = '';
+      let rowsHtml = '';
       Object.keys(categories).forEach(type => {
         Object.keys(categories[type] || {}).forEach(cat => {
-          const subcats = (categories[type][cat] || []).map(s => stripCategoryPrefix(s)).join(', ');
-          html += `
+          const subcats = (categories[type][cat] || []).join(', ');
+          rowsHtml += `
             <tr>
-              <td><span class="badge ${getBadgeClass(type)}">${type}</span></td>
+              <td><span class="badge ${getBadgeClass(type)}">${sanitize(type)}</span></td>
               <td><strong>${sanitize(cat)}</strong></td>
               <td style="font-size:0.85rem; color:var(--text-muted);">${sanitize(subcats)}</td>
               <td>
@@ -2913,28 +2967,31 @@
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </td>
-            </tr>
-          `;
+            </tr>`;
         });
       });
-      tbody.innerHTML = html;
+
+      tbody.innerHTML = rowsHtml || '<tr><td colspan="4" style="text-align:center;">No master category records.</td></tr>';
     }
 
     function addAdminCategory(e) {
       e.preventDefault();
       const type = document.getElementById('admin-cat-type').value;
       const catName = document.getElementById('admin-cat-name').value.trim();
-      const subList = document.getElementById('admin-subcat-list').value.split(',').map(s => stripCategoryPrefix(s.trim())).filter(s => s);
+      const subcatsRaw = document.getElementById('admin-subcat-list').value;
 
-      if (!catName || subList.length === 0) return;
+      if (!catName || !subcatsRaw) return;
 
+      const subcats = subcatsRaw.split(',').map(s => stripCategoryPrefix(s.trim())).filter(s => s.length > 0);
       let categories = getMasterCategories();
+
       if (!categories[type]) categories[type] = {};
-      categories[type][catName] = subList;
+      categories[type][catName] = subcats;
 
       localStorage.setItem('srv_categories', JSON.stringify(categories));
       document.getElementById('admin-cat-name').value = '';
       document.getElementById('admin-subcat-list').value = '';
+
       renderAdminCategoryTable();
       handleTypeChange();
       initDashboardFilterDropdowns();
@@ -2949,6 +3006,197 @@
         handleTypeChange();
         initDashboardFilterDropdowns();
       }
+    }
+
+    function renderAdminUsersTable() {
+      const users = JSON.parse(localStorage.getItem('srv_users')) || [];
+      const tbody = document.getElementById('admin-users-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = users.map(u => {
+        const txs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_transactions`)) || [];
+        const invs = JSON.parse(localStorage.getItem(`srv_data_${u.id}_investments`)) || [];
+        const emis = JSON.parse(localStorage.getItem(`srv_data_${u.id}_emis`)) || [];
+
+        return `
+          <tr>
+            <td><span class="status-dot ${u.isOnline ? 'dot-green' : 'dot-gray'}"></span></td>
+            <td><strong>${sanitize(u.name)}</strong></td>
+            <td>${sanitize(u.username || u.email)}</td>
+            <td>${sanitize(u.phone)}</td>
+            <td><span class="badge ${u.role === 'admin' ? 'badge-transfer' : 'badge-income'}">${sanitize(u.role)}</span></td>
+            <td>${u.loginCount || 0}</td>
+            <td style="font-size:0.8rem;">${sanitize(u.lastLogin || 'N/A')}</td>
+            <td>${txs.length}</td>
+            <td>${invs.length}</td>
+            <td>${emis.length}</td>
+          </tr>`;
+      }).join('');
+
+      renderAdminLoginLogs();
+    }
+
+    function renderAdminLoginLogs() {
+      const logs = JSON.parse(localStorage.getItem('srv_login_logs')) || [];
+      const tbody = document.getElementById('admin-login-logs-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td style="font-size:0.8rem;">${sanitize(l.timestamp)}</td>
+          <td><strong>${sanitize(l.userName)}</strong></td>
+          <td>${sanitize(l.email)}</td>
+          <td>${sanitize(l.role)}</td>
+          <td><span class="badge badge-income">${sanitize(l.status)}</span></td>
+        </tr>`).join('');
+    }
+
+    /* EXPORT AND IMPORT STUBS */
+    function exportTransactionsCSV() {
+      const txs = getUserData('transactions');
+      let csv = "ID,Date,Type,Category,Subcategory,Account,Amount\n";
+      txs.forEach(t => {
+        csv += `${t.id},"${t.date}","${t.type}","${t.category}","${t.subcategory}","${t.account}",${t.amount}\n`;
+      });
+      downloadFile(csv, 'transactions.csv', 'text/csv');
+    }
+
+    function exportTransactionsExcel() {
+      const txs = getUserData('transactions');
+      const ws = XLSX.utils.json_to_sheet(txs);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+      XLSX.writeFile(wb, "transactions.xlsx");
+    }
+
+    function exportInvestmentsCSV() {
+      const invs = getUserData('investments');
+      let csv = "ID,Date,Name,Type,Amount,Rate\n";
+      invs.forEach(i => {
+        csv += `${i.id},"${i.date}","${i.name}","${i.type}",${i.amount},${i.rate}\n`;
+      });
+      downloadFile(csv, 'investments.csv', 'text/csv');
+    }
+
+    function exportInvestmentsExcel() {
+      const invs = getUserData('investments');
+      const ws = XLSX.utils.json_to_sheet(invs);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Investments");
+      XLSX.writeFile(wb, "investments.xlsx");
+    }
+
+    function exportEMIsCSV() {
+      const emis = getUserData('emis');
+      let csv = "ID,Title,Principal,Rate,Tenure,StartDate\n";
+      emis.forEach(e => {
+        csv += `${e.id},"${e.title}",${e.principal},${e.rate},${e.tenure},"${e.startDate}"\n`;
+      });
+      downloadFile(csv, 'emis.csv', 'text/csv');
+    }
+
+    function exportEMIsExcel() {
+      const emis = getUserData('emis');
+      const ws = XLSX.utils.json_to_sheet(emis);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "EMIs");
+      XLSX.writeFile(wb, "emis.xlsx");
+    }
+
+    function downloadFile(content, fileName, contentType) {
+      const a = document.createElement("a");
+      const file = new Blob([content], { type: contentType });
+      a.href = URL.createObjectURL(file);
+      a.download = fileName;
+      a.click();
+    }
+
+    function triggerImport(type) {
+      document.getElementById(`import-${type}-file`).click();
+    }
+
+    function handleTransactionsImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.SheetNames[0];
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+        if (json && json.length) {
+          let txs = getUserData('transactions');
+          json.forEach(row => {
+            txs.push({
+              id: row.ID || Date.now() + Math.random(),
+              type: row.Type || 'Expense',
+              date: row.Date || new Date().toISOString().split('T')[0],
+              amount: parseFloat(row.Amount) || 0,
+              category: row.Category || 'Others',
+              subcategory: stripCategoryPrefix(row.Subcategory || 'Others'),
+              account: row.Account || 'Cash',
+              toAccount: row.ToAccount || ''
+            });
+          });
+          setUserData('transactions', txs);
+          renderAll();
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function handleInvestmentsImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        if (json && json.length) {
+          let invs = getUserData('investments');
+          json.forEach(row => {
+            invs.push({
+              id: row.ID || Date.now() + Math.random(),
+              date: row.Date || new Date().toISOString().split('T')[0],
+              name: row.Name || 'Asset',
+              type: row.Type || 'Business',
+              amount: parseFloat(row.Amount) || 0,
+              rate: parseFloat(row.Rate) || 0
+            });
+          });
+          setUserData('investments', invs);
+          renderAll();
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function handleEMIsImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        if (json && json.length) {
+          let emis = getUserData('emis');
+          json.forEach(row => {
+            emis.push({
+              id: row.ID || Date.now() + Math.random(),
+              title: row.Title || 'Loan',
+              principal: parseFloat(row.Principal) || 0,
+              rate: parseFloat(row.Rate) || 0,
+              tenure: parseInt(row.Tenure) || 12,
+              startDate: row.StartDate || new Date().toISOString().split('T')[0]
+            });
+          });
+          setUserData('emis', emis);
+          renderAll();
+        }
+      };
+      reader.readAsArrayBuffer(file);
     }
   </script>
 </body>
